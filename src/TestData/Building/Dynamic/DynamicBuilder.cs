@@ -27,7 +27,7 @@ namespace TestData.Building.Dynamic
 
         public DynamicBuilder() : this(new InstanceFactory<T>()) { }
         public DynamicBuilder(ConstructorSelection constructorSelection) : this(StandardBuild.CreateInstanceFactory<T>(constructorSelection)) { }
-        public DynamicBuilder(IInstanceFactory<T> instanceFactory) : this(instanceFactory, new ReadOnlyPropertyBackingFieldSelector()) { }
+        public DynamicBuilder(IInstanceFactory<T> instanceFactory) : this(instanceFactory, new ReadOnlyAutoPropertyBackingFieldSelector()) { }
         public DynamicBuilder(IPropertyBackingFieldSelector propertyBackingFieldSelector) : this(StandardBuild.CreateInstanceFactory<T>(), propertyBackingFieldSelector) { }
         public DynamicBuilder(IInstanceFactory<T> instanceFactory, IPropertyBackingFieldSelector propertyBackingFieldSelector)
         {

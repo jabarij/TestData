@@ -62,7 +62,7 @@ namespace TestData.Building.Dynamic
             {
                 // arrange
                 DynamicBuilder<SomeClass> sut;
-                var propertyBackingFieldSelector = new ReadOnlyPropertyBackingFieldSelector();
+                var propertyBackingFieldSelector = new ReadOnlyAutoPropertyBackingFieldSelector();
 
                 // act
                 sut = new DynamicBuilder<SomeClass>(propertyBackingFieldSelector);
@@ -78,7 +78,7 @@ namespace TestData.Building.Dynamic
                 // arrange
                 DynamicBuilder<SomeClass> sut;
                 var instanceFactory = new InstanceFactory<SomeClass>();
-                var propertyBackingFieldSelector = new ReadOnlyPropertyBackingFieldSelector();
+                var propertyBackingFieldSelector = new ReadOnlyAutoPropertyBackingFieldSelector();
 
                 // act
                 sut = new DynamicBuilder<SomeClass>(instanceFactory, propertyBackingFieldSelector);

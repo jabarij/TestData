@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace TestData.Building.Standard
 {
-    public class ReadOnlyPropertyBackingFieldSelector : IPropertyBackingFieldSelector
+    public class ReadOnlyAutoPropertyBackingFieldSelector : IPropertyBackingFieldSelector
     {
         public FieldInfo FindBackingField(PropertyInfo property)
         {

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>SoterDevelopment.TestData</id>
+    <version>0.1.0</version>
+    <description>Library to dynamically build and overwrite objects for testing purposes.</description>
+    <authors>Bartlomiej Soter (soter.development@gmail.com)</authors>
+    <projectUrl>https://github.com/jabarij/TestData</projectUrl>
+  </metadata>
+</package>

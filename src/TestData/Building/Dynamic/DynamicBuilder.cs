@@ -101,6 +101,7 @@ namespace TestData.Building.Dynamic
                 backingField.SetValue(instance, property.Overwriter.GetValue());
             }
         }
+
         private void OverwriteProperties(T instance)
         {
             var overwrittenProperties =

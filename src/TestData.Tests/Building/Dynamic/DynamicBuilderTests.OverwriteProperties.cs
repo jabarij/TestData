@@ -6,14 +6,13 @@ namespace TestData.Building.Dynamic
 {
     partial class DynamicBuilderTests
     {
-        public class Overwrite : DynamicBuilderTests
+        public class OverwriteProperties : DynamicBuilderTests
         {
             [Fact]
             public void NoOverwrites_ShouldReturnInstanceFromFactory()
             {
                 // arrange
                 var expectedInstance = new SomeClass();
-                int originalPropertyValue = expectedInstance.ReadOnly;
                 var sut = new DynamicBuilder<SomeClass>(
                     instanceFactory: StandardBuild.CreateInstanceFactoryFromDelegate(() => expectedInstance));
 
@@ -22,23 +21,6 @@ namespace TestData.Building.Dynamic
 
                 // assert
                 result.Should().BeSameAs(expectedInstance);
-                result.ReadOnly.Should().Be(originalPropertyValue);
-            }
-
-            [Fact]
-            public void ShouldOverwriteReadOnlyProperty()
-            {
-                // arrange
-                var sut = new DynamicBuilder<SomeClass>(
-                    instanceFactory: StandardBuild.CreateInstanceFactoryFromDelegate(() => new SomeClass()));
-                int expectedValue = 1;
-
-                // act
-                sut.Overwrite(nameof(SomeClass.ReadOnly), expectedValue);
-                var result = sut.Build();
-
-                // assert
-                result.ReadOnly.Should().Be(expectedValue);
             }
 
             [Fact]
@@ -92,12 +74,7 @@ namespace TestData.Building.Dynamic
             class SomeClass
             {
                 public SomeClass() { }
-                public SomeClass(int readOnly)
-                {
-                    ReadOnly = readOnly;
-                }
-
-                public int ReadOnly { get; }
+                
                 public int PublicGetPrivateSet { get; private set; }
                 public int PublicGetProtectedSet { get; protected set; }
                 public int PublicGetInternalSet { get; internal set; }

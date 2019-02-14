@@ -1,20 +1,9 @@
-﻿using System;
-using System.Reflection;
+﻿using System.Reflection;
 
 namespace TestData.Building.Standard
 {
-    public class ReadOnlyAutoPropertyBackingFieldSelector : IPropertyBackingFieldSelector
+    public class ReadOnlyAutoPropertyBackingFieldSelector : PropertyBackingFieldByNameSelector
     {
-        public FieldInfo FindBackingField(PropertyInfo property)
-        {
-            if (property == null) throw new ArgumentNullException(nameof(property));
-
-            var backingFieldName = GetBackingFieldName(property.Name);
-            return property
-                .DeclaringType?
-                .GetField(GetBackingFieldName(property.Name), BindingFlags.Instance | BindingFlags.NonPublic);
-        }
-
-        protected virtual string GetBackingFieldName(string propertyName) => $"<{propertyName}>k__BackingField";
+        protected override string GetBackingFieldName(PropertyInfo property) => $"<{property.Name}>k__BackingField";
     }
 }

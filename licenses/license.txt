@@ -1,0 +1,1 @@
+I'm a software developer, not a lawyer so I got no fuckin' idea how to write licences. So let's say you cannot use any part of the TestData library unless I gave you my consent to use it.

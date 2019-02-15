@@ -1,4 +1,5 @@
 ﻿using TestData.Building.Dynamic;
+using TestData.Building.Standard;
 
 namespace TestData.Building
 {
@@ -12,5 +13,6 @@ namespace TestData.Building
                 builder.OverwriteAll(template);
             return builder;
         }
+        public static DynamicBuilder<T> DynamicallyForFixedInstance<T>(T instance) where T : class => new DynamicBuilder<T>(new FixedInstanceFactory<T>(instance));
     }
 }

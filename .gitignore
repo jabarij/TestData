@@ -302,6 +302,8 @@ __pycache__/
 tools/**
 !tools/packages.config
 build/**
+tests/**
+**/*.trx
 
 # Tabs Studio
 *.tss

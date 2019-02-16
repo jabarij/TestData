@@ -1,13 +1,13 @@
-﻿using TestData.Common.Collections;
-using TestData.Common.Reflection;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using TestData.Common.Collections;
+using TestData.Common.Reflection;
 
 namespace TestData.Building
 {
-    public abstract class Builder<T> : IBuilder<T>
+    public abstract class Builder<T> : IOverwritableBuilder<T>
     {
         protected Builder()
         {
@@ -34,9 +34,9 @@ namespace TestData.Building
         public abstract T Build();
         object IBuilder.Build() => Build();
 
-        public virtual bool IsOverwritten() => 
+        public virtual bool IsOverwritten() =>
             GetPropertyOverwriters().Any(e => e.IsOverwritten)
-            || GetPropertyBuilders().Any(e => e.IsOverwritten());
+            || GetPropertyBuilders().OfType<IOverwritableBuilder>().Any(e => e.IsOverwritten());
         protected virtual IEnumerable<IPropertyOverwriter> GetPropertyOverwriters() =>
             GetType()
             .GetProperties(BindingFlags.GetProperty | BindingFlags.Public | BindingFlags.Instance)

@@ -28,6 +28,6 @@ using System.Runtime.InteropServices;
 //      Build Number
 //      Revision
 //
-[assembly: AssemblyVersion("0.1.0.0")]
-[assembly: AssemblyFileVersion("0.1.0.0")]
-[assembly: AssemblyInformationalVersion("0.1.0-beta.1+15.Branch.release/Apply-cake-build.Sha.46ecf53250b51f95a408f6d1b21d6405cde0eaa8")]
+[assembly: AssemblyVersion("0.3.0.0")]
+[assembly: AssemblyFileVersion("0.3.0.0")]
+[assembly: AssemblyInformationalVersion("0.3.0-beta.1+0.Branch.release/0.3.0.Sha.ee99eeaf04afd9d3aa5e1b6d37d390a0b68d13be")]

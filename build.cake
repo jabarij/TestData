@@ -5,17 +5,40 @@ var dotNetCoreVerbosity = (DotNetCoreVerbosity)Enum.Parse(typeof(DotNetCoreVerbo
 var outputRootDir = "./build/";
 var buildOutputDir = outputRootDir + "artifacts/";
 var testsOutputDir = outputRootDir + "tests/";
-var solutionPath_TestData = "./src/TestData.sln";
+var nugetOutputDir = outputRootDir + "nuget/";
 
+var sourceRootDir = "./src/";
+var solutionPath_TestData = sourceRootDir + "TestData.sln";
+var projectPath_TestData = sourceRootDir + "TestData/TestData.csproj";
+
+string version = "0.0.0.0";
+string assemblyVersion = "0.0.0.0";
+string fileVersion = "0.0.0.0";
+
+var resolveVersionTask = Task("Resolve-Version")
+  .Does(() =>
+  {
+		var gitVersion = GitVersion(new GitVersionSettings {
+			UpdateAssemblyInfo = false
+		});
+    version = gitVersion.FullSemVer;
+    assemblyVersion = gitVersion.AssemblySemVer;
+    fileVersion = "1.0.0.0";
+  });
 
 var buildSolutionTask = Task("Build-Solution")
+  .IsDependentOn(resolveVersionTask)
   .Does(() =>
   {
     DotNetCoreBuild(solutionPath_TestData,
       new DotNetCoreBuildSettings
       {
         Configuration = configuration,
-        OutputDirectory = buildOutputDir
+        OutputDirectory = buildOutputDir,
+        ArgumentCustomization = args => args
+          .Append($"-p:Version={version}")
+          .Append($"-p:AssemblyVersion={assemblyVersion}")
+          .Append($"-p:FileVersion={fileVersion}")
       });
   });
   
@@ -23,8 +46,8 @@ var runUnitTestsTask = Task("Run-UnitTests")
   .IsDependentOn(buildSolutionTask)
   .Does(() =>
   {
-    var projectFiles = GetFiles("./src/**/*.Tests.csproj");
-    foreach(var project in projectFiles)
+    var testProjectFiles = GetFiles(sourceRootDir + "**/*.Tests.csproj");
+    foreach(var project in testProjectFiles)
     {
       Information("Testing project: " + project);
       DotNetCoreTest(project.FullPath,
@@ -47,6 +70,12 @@ var buildNuGetPackageTask = Task("Build-NuGetPackage")
   .IsDependentOn(runUnitTestsTask)
   .Does(() =>
   {
+    NuGetPack(projectPath_TestData,
+      new NuGetPackSettings
+      {
+        OutputDirectory = nugetOutputDir,
+        Version = version
+      });
   });
 
 var buildTask = Task("Build")

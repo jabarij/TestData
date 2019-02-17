@@ -14,7 +14,7 @@ namespace TestData.Building.Dynamic
                 // arrange
                 var expectedInstance = new SomeClass();
                 var sut = new DynamicBuilder<SomeClass>(
-                    instanceFactory: StandardBuild.CreateInstanceFactoryFromDelegate(() => expectedInstance));
+                    instanceFactory: new DelegateInstanceFactory<SomeClass>(() => expectedInstance));
 
                 // act
                 var result = sut.Build();
@@ -28,7 +28,7 @@ namespace TestData.Building.Dynamic
             {
                 // arrange
                 var sut = new DynamicBuilder<SomeClass>(
-                    instanceFactory: StandardBuild.CreateInstanceFactoryFromDelegate(() => new SomeClass()));
+                    instanceFactory: new DelegateInstanceFactory<SomeClass>(() => new SomeClass()));
                 int expectedValue = 1;
 
                 // act
@@ -44,7 +44,7 @@ namespace TestData.Building.Dynamic
             {
                 // arrange
                 var sut = new DynamicBuilder<SomeClass>(
-                    instanceFactory: StandardBuild.CreateInstanceFactoryFromDelegate(() => new SomeClass()));
+                    instanceFactory: new DelegateInstanceFactory<SomeClass>(() => new SomeClass()));
                 int expectedValue = 1;
 
                 // act
@@ -60,7 +60,7 @@ namespace TestData.Building.Dynamic
             {
                 // arrange
                 var sut = new DynamicBuilder<SomeClass>(
-                    instanceFactory: StandardBuild.CreateInstanceFactoryFromDelegate(() => new SomeClass()));
+                    instanceFactory: new DelegateInstanceFactory<SomeClass>(() => new SomeClass()));
                 int expectedValue = 1;
 
                 // act

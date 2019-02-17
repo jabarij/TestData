@@ -27,10 +27,10 @@ namespace TestData.Building.Dynamic
         private static bool ArePropertyNamesEqual(string propertyName1, string propertyName2) =>
             string.Equals(propertyName1, propertyName2, StringComparison.Ordinal);
 
-        public DynamicBuilder() : this(new InstanceFactory<T>()) { }
-        public DynamicBuilder(ConstructorSelection constructorSelection) : this(StandardBuild.CreateInstanceFactory<T>(constructorSelection)) { }
+        public DynamicBuilder() : this(new ConstructorInstanceFactory<T>()) { }
+        public DynamicBuilder(ConstructorSelection constructorSelection) : this(new ConstructorInstanceFactory<T>(constructorSelection)) { }
         public DynamicBuilder(IInstanceFactory<T> instanceFactory) : this(instanceFactory, new ReadOnlyAutoPropertyBackingFieldSelector()) { }
-        public DynamicBuilder(IPropertyBackingFieldSelector propertyBackingFieldSelector) : this(StandardBuild.CreateInstanceFactory<T>(), propertyBackingFieldSelector) { }
+        public DynamicBuilder(IPropertyBackingFieldSelector propertyBackingFieldSelector) : this(new ConstructorInstanceFactory<T>(), propertyBackingFieldSelector) { }
         public DynamicBuilder(IInstanceFactory<T> instanceFactory, IPropertyBackingFieldSelector propertyBackingFieldSelector)
         {
             InstanceFactory = instanceFactory ?? throw new ArgumentNullException(nameof(instanceFactory));

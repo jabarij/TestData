@@ -1,5 +1,4 @@
 ﻿using FluentAssertions;
-using System.Text.RegularExpressions;
 using TestData.Building.Standard;
 using Xunit;
 
@@ -14,7 +13,7 @@ namespace TestData.Building.Dynamic
             {
                 // arrange
                 var sut = new DynamicBuilder<SomeClass>(
-                    instanceFactory: StandardBuild.CreateInstanceFactoryFromDelegate(() => new SomeClass()));
+                    instanceFactory: new DelegateInstanceFactory<SomeClass>(() => new SomeClass()));
                 int expectedValue = 1;
 
                 // act
@@ -30,7 +29,7 @@ namespace TestData.Building.Dynamic
             {
                 // arrange
                 var sut = new DynamicBuilder<SomeClass>(
-                    instanceFactory: StandardBuild.CreateInstanceFactoryFromDelegate(() => new SomeClass()),
+                    instanceFactory: new DelegateInstanceFactory<SomeClass>(() => new SomeClass()),
                     propertyBackingFieldSelector: SelectBackingField.FromPropertyNameByRegex(@"^([A-Z])", m => $"_{m.Value.ToLower()}"));
                 int expectedValue = 1;
 

@@ -30,4 +30,4 @@ using System.Runtime.InteropServices;
 //
 [assembly: AssemblyVersion("0.1.0.0")]
 [assembly: AssemblyFileVersion("0.1.0.0")]
-[assembly: AssemblyInformationalVersion("0.1.0-beta.1+13.Branch.release/Apply-cake-build.Sha.dc43719b4c716df937e422d49ff6d5d917ea862c")]
+[assembly: AssemblyInformationalVersion("0.1.0-beta.1+15.Branch.release/Apply-cake-build.Sha.46ecf53250b51f95a408f6d1b21d6405cde0eaa8")]

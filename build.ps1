@@ -38,8 +38,10 @@ https://cakebuild.net
 [CmdletBinding()]
 Param(
     [string]$Script = "build.cake",
-    [string]$Target,
-    [string]$Configuration,
+    [ValidateSet("Build", "Publish")]
+    [string]$Target = "Build",
+    [ValidateSet("Debug", "Release")]
+    [string]$Configuration = "Release",
     [ValidateSet("Quiet", "Minimal", "Normal", "Verbose", "Diagnostic")]
     [string]$Verbosity,
     [switch]$ShowDescription,
@@ -47,7 +49,12 @@ Param(
     [switch]$DryRun,
     [switch]$SkipToolPackageRestore,
     [Parameter(Position=0,Mandatory=$false,ValueFromRemainingArguments=$true)]
-    [string[]]$ScriptArgs
+    [string[]]$ScriptArgs,
+    
+    [ValidateSet("Quiet", "Minimal", "Normal", "Diagnostic", "Detailed")]
+    [string]$DotNetCoreVerbosity,
+    [string]$NuGetApiKey,
+    [string]$NuGetPushSource
 )
 
 # Attempt to set highest encryption available for SecurityProtocol.

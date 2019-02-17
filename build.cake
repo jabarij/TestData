@@ -11,25 +11,13 @@ var sourceRootDir = "./src/";
 var solutionPath_TestData = sourceRootDir + "TestData.sln";
 var projectPath_TestData = sourceRootDir + "TestData/TestData.csproj";
 
-string version = "0.0.0.0";
-string assemblyVersion = "0.0.0.0";
-string fileVersion = "0.0.0.0";
-
 var resolveVersionTask = Task("Resolve-Version")
   .Does(() =>
   {
 		var gitVersion = GitVersion(new GitVersionSettings {
-			UpdateAssemblyInfo = false
-		});
-    
-    version = gitVersion.FullSemVer;
-    Information($"version (GitVersion.FullSemVer): {version}");
-    
-    assemblyVersion = gitVersion.AssemblySemVer;
-    Information($"assemblyVersion (GitVersion.AssemblySemVer): {assemblyVersion}");
-    
-    fileVersion = "1.0.0.0";
-    Information($"fileVersion (fixed): {fileVersion}");
+			UpdateAssemblyInfo = true
+		});    
+    Information($"GitVersion.FullSemVer: {gitVersion.FullSemVer}");
   });
 
 var buildSolutionTask = Task("Build-Solution")
@@ -40,11 +28,7 @@ var buildSolutionTask = Task("Build-Solution")
       new DotNetCoreBuildSettings
       {
         Configuration = configuration,
-        OutputDirectory = buildOutputDir,
-        ArgumentCustomization = args => args
-          .Append($"-p:Version={version}")
-          .Append($"-p:AssemblyVersion={assemblyVersion}")
-          .Append($"-p:FileVersion={fileVersion}")
+        OutputDirectory = buildOutputDir
       });
   });
   
@@ -70,30 +54,10 @@ var runUnitTestsTask = Task("Run-UnitTests")
         });
     }
   });
-  
-var buildNuGetPackageTask = Task("Build-NuGetPackage")
-  .IsDependentOn(resolveVersionTask)
-  .IsDependentOn(buildSolutionTask)
-  .IsDependentOn(runUnitTestsTask)
-  .Does(() =>
-  {
-    NuGetPack(projectPath_TestData,
-      new NuGetPackSettings
-      {
-        OutputDirectory = nugetOutputDir,
-        Version = version,
-        ArgumentCustomization = args => args
-          .Append($"-Properties Version={version}")
-          .Append($"-Properties AssemblyVersion={assemblyVersion}")
-          .Append($"-Properties FileVersion={fileVersion}")
-          //.Append($"-Properties Version={version};AssemblyVersion={assemblyVersion};FileVersion={fileVersion}")
-      });
-  });
 
 var buildTask = Task("Build")
   .IsDependentOn(buildSolutionTask)
   .IsDependentOn(runUnitTestsTask)
-  .IsDependentOn(buildNuGetPackageTask)
   .Does(() =>
   {
   });
@@ -103,7 +67,7 @@ var publishNuGetPackageTask = Task("Publish-NuGetPackage")
   {
   });
 
-Task("Publish")
+var publishTask = Task("Publish")
   .IsDependentOn(buildTask)
   .IsDependentOn(publishNuGetPackageTask)
   .Does(() =>

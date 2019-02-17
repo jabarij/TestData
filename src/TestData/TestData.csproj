@@ -2,12 +2,20 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-    <Version>$version$</Version>
-    <AssemblyVersion>$assemblyVersion$</AssemblyVersion>
-    <FileVersion>$fileVersion$</FileVersion>
     <Authors>Bartłomiej Soter (soter.development@gmail.com)</Authors>
     <Company>Soter Development</Company>
-    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <PackageProjectUrl>https://github.com/jabarij/TestData</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/jabarij/TestData.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageId>SoterDevelopment.TestData</PackageId>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="System">
+      <HintPath>System</HintPath>
+    </Reference>
+  </ItemGroup>
 
 </Project>

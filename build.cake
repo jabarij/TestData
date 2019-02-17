@@ -21,9 +21,15 @@ var resolveVersionTask = Task("Resolve-Version")
 		var gitVersion = GitVersion(new GitVersionSettings {
 			UpdateAssemblyInfo = false
 		});
+    
     version = gitVersion.FullSemVer;
+    Information($"version (GitVersion.FullSemVer): {version}");
+    
     assemblyVersion = gitVersion.AssemblySemVer;
+    Information($"assemblyVersion (GitVersion.AssemblySemVer): {assemblyVersion}");
+    
     fileVersion = "1.0.0.0";
+    Information($"fileVersion (fixed): {fileVersion}");
   });
 
 var buildSolutionTask = Task("Build-Solution")
@@ -66,6 +72,7 @@ var runUnitTestsTask = Task("Run-UnitTests")
   });
   
 var buildNuGetPackageTask = Task("Build-NuGetPackage")
+  .IsDependentOn(resolveVersionTask)
   .IsDependentOn(buildSolutionTask)
   .IsDependentOn(runUnitTestsTask)
   .Does(() =>
@@ -74,7 +81,12 @@ var buildNuGetPackageTask = Task("Build-NuGetPackage")
       new NuGetPackSettings
       {
         OutputDirectory = nugetOutputDir,
-        Version = version
+        Version = version,
+        ArgumentCustomization = args => args
+          .Append($"-Properties Version={version}")
+          .Append($"-Properties AssemblyVersion={assemblyVersion}")
+          .Append($"-Properties FileVersion={fileVersion}")
+          //.Append($"-Properties Version={version};AssemblyVersion={assemblyVersion};FileVersion={fileVersion}")
       });
   });
 

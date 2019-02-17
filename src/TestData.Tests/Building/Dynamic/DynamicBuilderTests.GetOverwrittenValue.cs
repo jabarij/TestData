@@ -31,7 +31,7 @@ namespace TestData.Building.Dynamic
                 var sut = new DynamicBuilder<SomeClass>();
 
                 // act
-                Action getOverwrittenValue = () => sut.GetOverwrittenValue<int>("StringProperty");
+                Action getOverwrittenValue = () => sut.GetOverwrittenValue<int>("UnknownProperty");
 
                 // assert
                 getOverwrittenValue.Should().Throw<InvalidOperationException>();

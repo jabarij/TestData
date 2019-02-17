@@ -11,13 +11,15 @@ var sourceRootDir = "./src/";
 var solutionPath_TestData = sourceRootDir + "TestData.sln";
 var projectPath_TestData = sourceRootDir + "TestData/TestData.csproj";
 
+GitVersion version = null;
+
 var resolveVersionTask = Task("Resolve-Version")
   .Does(() =>
   {
-		var gitVersion = GitVersion(new GitVersionSettings {
+		version = GitVersion(new GitVersionSettings {
 			UpdateAssemblyInfo = true
 		});    
-    Information($"GitVersion.FullSemVer: {gitVersion.FullSemVer}");
+    Information($"GitVersion.FullSemVer: {version.FullSemVer}");
   });
 
 var buildSolutionTask = Task("Build-Solution")
@@ -28,7 +30,9 @@ var buildSolutionTask = Task("Build-Solution")
       new DotNetCoreBuildSettings
       {
         Configuration = configuration,
-        OutputDirectory = buildOutputDir
+        OutputDirectory = buildOutputDir,
+        ArgumentCustomization = args => args
+          .Append($"-p:PackageVersion={version.FullSemVer}")
       });
   });
   

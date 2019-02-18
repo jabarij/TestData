@@ -1,5 +1,4 @@
 ﻿using FluentAssertions;
-using System.Text.RegularExpressions;
 using TestData.Building.Standard;
 using Xunit;
 
@@ -9,37 +8,27 @@ namespace TestData.Building.Dynamic
     {
         public class OverwriteBackingFields : DynamicBuilderTests
         {
-            [Fact]
-            public void ShouldOverwriteReadOnlyAutoProperty()
+            [Theory]
+            [InlineData(nameof(SomeClass.ReadOnlyAutoProperty), 1)]
+            [InlineData(nameof(SomeClass.ReadOnlyPropertyWithExplicitBackingField), 1)]
+            public void ShouldSetPropertyUsingPropertySetter(string propertyName, object expectedValue)
             {
                 // arrange
+                dynamic setPropertyArgs = null;
+                var instance = new SomeClass();
                 var sut = new DynamicBuilder<SomeClass>(
-                    instanceFactory: StandardBuild.CreateInstanceFactoryFromDelegate(() => new SomeClass()));
-                int expectedValue = 1;
+                    instanceFactory: new DelegateInstanceFactory<SomeClass>(() => instance),
+                    propertySetter: new DelegatePropertySetter((ownr, prop, val) => setPropertyArgs = new { Owner = ownr, Property = prop, Value = val }));
 
                 // act
-                sut.Overwrite(nameof(SomeClass.ReadOnlyAutoProperty), expectedValue);
+                sut.Overwrite(propertyName, expectedValue);
                 var result = sut.Build();
 
                 // assert
-                result.ReadOnlyAutoProperty.Should().Be(expectedValue);
-            }
-
-            [Fact]
-            public void ShouldOverwriteReadOnlyPropertyWithExplicitBackingField()
-            {
-                // arrange
-                var sut = new DynamicBuilder<SomeClass>(
-                    instanceFactory: StandardBuild.CreateInstanceFactoryFromDelegate(() => new SomeClass()),
-                    propertyBackingFieldSelector: SelectBackingField.FromPropertyNameByRegex(@"^([A-Z])", m => $"_{m.Value.ToLower()}"));
-                int expectedValue = 1;
-
-                // act
-                sut.Overwrite(nameof(SomeClass.ReadOnlyPropertyWithExplicitBackingField), expectedValue);
-                var result = sut.Build();
-
-                // assert
-                result.ReadOnlyPropertyWithExplicitBackingField.Should().Be(expectedValue);
+                ((object)setPropertyArgs).Should().NotBeNull();
+                ((object)setPropertyArgs.Owner).Should().BeSameAs(instance);
+                ((object)setPropertyArgs.Property.Name).Should().Be(propertyName);
+                ((object)setPropertyArgs.Value).Should().Be(expectedValue);
             }
 
             class SomeClass

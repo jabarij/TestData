@@ -22,13 +22,15 @@ namespace TestData.Building.Dynamic
         private readonly HashSet<INamedPropertyOverwriter> _propertyOverwriters =
             new HashSet<INamedPropertyOverwriter>(
                 new DelegatedEqualityComparer<INamedPropertyOverwriter>(
-                    (a, b) => string.Equals(a.PropertyName, b.PropertyName, StringComparison.Ordinal),
+                    (a, b) => ArePropertyNamesEqual(a.PropertyName, b.PropertyName),
                     obj => obj.PropertyName.GetHashCode()));
+        private static bool ArePropertyNamesEqual(string propertyName1, string propertyName2) =>
+            string.Equals(propertyName1, propertyName2, StringComparison.Ordinal);
 
-        public DynamicBuilder() : this(new InstanceFactory<T>()) { }
-        public DynamicBuilder(ConstructorSelection constructorSelection) : this(StandardBuild.CreateInstanceFactory<T>(constructorSelection)) { }
+        public DynamicBuilder() : this(new ConstructorInstanceFactory<T>()) { }
+        public DynamicBuilder(ConstructorSelection constructorSelection) : this(new ConstructorInstanceFactory<T>(constructorSelection)) { }
         public DynamicBuilder(IInstanceFactory<T> instanceFactory) : this(instanceFactory, new ReadOnlyAutoPropertyBackingFieldSelector()) { }
-        public DynamicBuilder(IPropertyBackingFieldSelector propertyBackingFieldSelector) : this(StandardBuild.CreateInstanceFactory<T>(), propertyBackingFieldSelector) { }
+        public DynamicBuilder(IPropertyBackingFieldSelector propertyBackingFieldSelector) : this(new ConstructorInstanceFactory<T>(), propertyBackingFieldSelector) { }
         public DynamicBuilder(IInstanceFactory<T> instanceFactory, IPropertyBackingFieldSelector propertyBackingFieldSelector)
         {
             InstanceFactory = instanceFactory ?? throw new ArgumentNullException(nameof(instanceFactory));
@@ -38,23 +40,9 @@ namespace TestData.Building.Dynamic
         public IInstanceFactory<T> InstanceFactory { get; }
         public IPropertyBackingFieldSelector PropertyBackingFieldSelector { get; }
 
-        public IDynamicBuilder<TChild> CreateChildBuilder<TChild>()
-        {
-            var constructorSelection =
-                ((InstanceFactory as InstanceFactory<T>)?.ConstructorSelector as ConstructorSelector<T>)?.ConstructorSelection;
-            return
-                constructorSelection != null
-                ? new DynamicBuilder<TChild>(new InstanceFactory<TChild>(constructorSelection.Value))
-                : new DynamicBuilder<TChild>();
-        }
         public void Overwrite<TProperty>(string name, TProperty value)
         {
-            if (string.IsNullOrWhiteSpace(name)) throw new ArgumentNullException(nameof(name));
-            var property =
-                Properties.SingleOrDefault(e => string.Equals(e.Name, name, StringComparison.Ordinal))
-                ?? Properties.FirstOrDefault(e => string.Equals(e.Name, name, StringComparison.OrdinalIgnoreCase));
-            if (property == null)
-                throw new InvalidOperationException($"Unknown property '{name}' of type {typeof(T).FullName}.");
+            var property = GetPropertyOrThrow(name);
             Overwrite(new NamedPropertyOverwriter<TProperty>(property.Name, value));
         }
         public void OverwriteAll(T template)
@@ -74,6 +62,20 @@ namespace TestData.Building.Dynamic
                 _propertyOverwriters.Add(overwriter);
             else
                 existingOverwriter.SetValue(overwriter.GetValue());
+        }
+        public bool IsOverwritten(string name)
+        {
+            var property = GetPropertyOrThrow(name);
+            return _propertyOverwriters.Any(e => ArePropertyNamesEqual(e.PropertyName, property.Name));
+        }
+        public TProperty GetOverwrittenValue<TProperty>(string name)
+        {
+            var property = GetPropertyOrThrow(name);
+            var overwriter = new NamedPropertyOverwriter<TProperty>(property.Name);
+            return
+                _propertyOverwriters.TryGetValue(overwriter, out INamedPropertyOverwriter existingOverwriter)
+                ? (TProperty)existingOverwriter.GetValue()
+                : overwriter.Value;
         }
 
         public sealed override T Build()
@@ -120,5 +122,15 @@ namespace TestData.Building.Dynamic
         private FieldInfo GetBackingFieldOrThrow(PropertyInfo property) =>
             PropertyBackingFieldSelector.FindBackingField(property)
             ?? throw new InvalidOperationException($"Could not find backing field for property {property.DeclaringType.FullName}.{property.Name} using selector of type {PropertyBackingFieldSelector.GetType().FullName}.");
+        private static PropertyInfo GetPropertyOrThrow(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name)) throw new ArgumentNullException(nameof(name));
+            var property =
+                Properties.SingleOrDefault(e => string.Equals(e.Name, name, StringComparison.Ordinal))
+                ?? Properties.FirstOrDefault(e => string.Equals(e.Name, name, StringComparison.OrdinalIgnoreCase));
+            if (property == null)
+                throw new InvalidOperationException($"Unknown property '{name}' of type {typeof(T).FullName}.");
+            return property;
+        }
     }
 }

@@ -34,8 +34,8 @@ namespace TestData.Building.Dynamic
 
                 // assert
                 sut.InstanceFactory.Should().NotBeNull();
-                sut.InstanceFactory.Should().BeOfType<InstanceFactory<SomeClass>>();
-                var instanceFactory = (InstanceFactory<SomeClass>)sut.InstanceFactory;
+                sut.InstanceFactory.Should().BeOfType<ConstructorInstanceFactory<SomeClass>>();
+                var instanceFactory = (ConstructorInstanceFactory<SomeClass>)sut.InstanceFactory;
                 instanceFactory.ConstructorSelector.Should().BeOfType<ConstructorSelector<SomeClass>>();
                 var constructorSelector = (ConstructorSelector<SomeClass>)instanceFactory.ConstructorSelector;
                 constructorSelector.ConstructorSelection.Should().Be(constructorSelection);
@@ -47,7 +47,7 @@ namespace TestData.Building.Dynamic
             {
                 // arrange
                 DynamicBuilder<SomeClass> sut;
-                var instanceFactory = new InstanceFactory<SomeClass>();
+                var instanceFactory = new ConstructorInstanceFactory<SomeClass>();
 
                 // act
                 sut = new DynamicBuilder<SomeClass>(instanceFactory);
@@ -77,7 +77,7 @@ namespace TestData.Building.Dynamic
             {
                 // arrange
                 DynamicBuilder<SomeClass> sut;
-                var instanceFactory = new InstanceFactory<SomeClass>();
+                var instanceFactory = new ConstructorInstanceFactory<SomeClass>();
                 var propertyBackingFieldSelector = new ReadOnlyAutoPropertyBackingFieldSelector();
 
                 // act

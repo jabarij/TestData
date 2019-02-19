@@ -10,32 +10,33 @@ namespace TestData.Building.Dynamic
 {
     public sealed class DynamicBuilder<T> : Builder<T>, IDynamicBuilder<T>
     {
-        private static readonly IReadOnlyCollection<PropertyInfo> Properties;
-        static DynamicBuilder()
-        {
-            var properties = typeof(T)
-                .GetProperties(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
-                .ToList();
-            Properties = new ReadOnlyCollection<PropertyInfo>(properties);
-        }
+        private static readonly IReadOnlyCollection<PropertyInfo> Properties =
+            new ReadOnlyCollection<PropertyInfo>(
+                (from property in typeof(T).GetProperties(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
+                 let getMethod = property.GetGetMethod(true)
+                 where
+                    getMethod.IsPublic
+                    || getMethod.IsAssembly
+                    || getMethod.IsFamilyOrAssembly
+                 select property).ToList());
 
         private readonly HashSet<INamedPropertyOverwriter> _propertyOverwriters =
             new HashSet<INamedPropertyOverwriter>(
                 new DelegatedEqualityComparer<INamedPropertyOverwriter>(
-                    (a, b) => ArePropertyNamesEqual(a.PropertyName, b.PropertyName),
+                    (a, b) => string.Equals(a.PropertyName, b.PropertyName, StringComparison.Ordinal),
                     obj => obj.PropertyName.GetHashCode()));
-        private static bool ArePropertyNamesEqual(string propertyName1, string propertyName2) =>
-            string.Equals(propertyName1, propertyName2, StringComparison.Ordinal);
 
-        public DynamicBuilder() : this(new ConstructorInstanceFactory<T>()) { }
-        public DynamicBuilder(ConstructorSelection constructorSelection) : this(new ConstructorInstanceFactory<T>(constructorSelection)) { }
-        public DynamicBuilder(IInstanceFactory<T> instanceFactory) : this(instanceFactory, new PropertySetter()) { }
-        public DynamicBuilder(IPropertySetter propertySetter) : this(new ConstructorInstanceFactory<T>(), propertySetter) { }
+        public DynamicBuilder() : this(CreateDefaultInstanceFactory(), CreateDefaultPropertySetter()) { }
+        public DynamicBuilder(IInstanceFactory<T> instanceFactory) : this(instanceFactory, CreateDefaultPropertySetter()) { }
+        public DynamicBuilder(IPropertySetter propertySetter) : this(CreateDefaultInstanceFactory(), propertySetter) { }
         public DynamicBuilder(IInstanceFactory<T> instanceFactory, IPropertySetter propertySetter)
         {
             InstanceFactory = instanceFactory ?? throw new ArgumentNullException(nameof(instanceFactory));
             PropertySetter = propertySetter ?? throw new ArgumentNullException(nameof(propertySetter));
         }
+
+        public static IInstanceFactory<T> CreateDefaultInstanceFactory() => new ConstructorInstanceFactory<T>();
+        public static IPropertySetter CreateDefaultPropertySetter() => new PropertySetter();
 
         public IInstanceFactory<T> InstanceFactory { get; }
         public IPropertySetter PropertySetter { get; }
@@ -66,7 +67,7 @@ namespace TestData.Building.Dynamic
         public bool IsOverwritten(string name)
         {
             var property = GetPropertyOrThrow(name);
-            return _propertyOverwriters.Any(e => ArePropertyNamesEqual(e.PropertyName, property.Name));
+            return _propertyOverwriters.Any(e => string.Equals(e.PropertyName, property.Name, StringComparison.Ordinal));
         }
         public TProperty GetOverwrittenValue<TProperty>(string name)
         {
@@ -81,12 +82,14 @@ namespace TestData.Building.Dynamic
         public sealed override T Build()
         {
             T instance = InstanceFactory.Create(_propertyOverwriters);
+
             var overwrittenProperties =
                 from property in Properties
                 join overwriter in _propertyOverwriters on property.Name equals overwriter.PropertyName
                 select (Property: property, Overwriter: overwriter);
             foreach (var entry in overwrittenProperties)
                 PropertySetter.SetProperty(instance, entry.Property, entry.Overwriter.GetValue());
+
             return instance;
         }
 

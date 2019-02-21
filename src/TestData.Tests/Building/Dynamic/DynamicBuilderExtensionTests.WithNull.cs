@@ -50,7 +50,7 @@ namespace TestData.Building.Dynamic
             }
 
             [Fact]
-            public void ShouldOverwritePropertyByExpression()
+            public void ClassProperty_ShouldOverwritePropertyByExpression()
             {
                 // arrange
                 var builderMock = new Mock<IDynamicBuilder<TestClass>>();
@@ -62,10 +62,25 @@ namespace TestData.Building.Dynamic
                 builderMock.Verify(e => e.Overwrite(nameof(TestClass.StringProperty), (string)null), Times.Once);
             }
 
+            [Fact]
+            public void NullableProperty_ShouldOverwritePropertyByExpression()
+            {
+                // arrange
+                var builderMock = new Mock<IDynamicBuilder<TestClass>>();
+
+                // act
+                var builder = DynamicBuilderExtensions.WithNull(builderMock.Object, e => e.NullableInt32Property);
+
+                // assert
+                builderMock.Verify(e => e.Overwrite(nameof(TestClass.NullableInt32Property), (int?)null), Times.Once);
+            }
+
             public class TestClass
             {
                 public string StringProperty { get; set; }
                 public string StringFunction() => null;
+                public int? NullableInt32Property { get; set; }
+
             }
         }
     }

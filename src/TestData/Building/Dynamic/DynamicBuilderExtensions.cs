@@ -10,6 +10,9 @@ namespace TestData.Building.Dynamic
         public static IDynamicBuilder<T> WithNull<T, TProperty>(this IDynamicBuilder<T> builder, Expression<Func<T, TProperty>> property) where TProperty : class =>
             WithValue(builder, property, null);
 
+        public static IDynamicBuilder<T> WithNull<T, TProperty>(this IDynamicBuilder<T> builder, Expression<Func<T, TProperty?>> property) where TProperty : struct =>
+            WithValue(builder, property, null);
+
         public static IDynamicBuilder<T> WithEmpty<T, TElement>(this IDynamicBuilder<T> builder, Expression<Func<T, IEnumerable<TElement>>> property) =>
             WithValue(builder, property, Enumerable.Empty<TElement>());
 

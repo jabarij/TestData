@@ -20,11 +20,8 @@ namespace TestData.Building.Standard
         {
             var constructor = ConstructorSelector.SelectConstructor();
             if (constructor == null)
-            {
-                var exception =  new InvalidOperationException($"Could not select any constructor for type {typeof(T).FullName} using constructor selector of type {ConstructorSelector.GetType().FullName}.");
-                exception.Data.Add(ErrorCodes.ErrorCodeExceptionDataKey, ErrorCodes.ConstructorNotFoundErrorCode);
-                throw exception;
-            }
+                Error.Raise(new InvalidOperationException($"Could not select any constructor for type {typeof(T).FullName} using constructor selector of type {ConstructorSelector.GetType().FullName}."),
+                    Errors.ConstructorNotFound);
 
             var parameters = constructor
                 .GetParameters()

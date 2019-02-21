@@ -10,7 +10,8 @@ namespace TestData.Building.Dynamic
             if (builder == null) throw new ArgumentNullException(nameof(builder));
             if (property == null) throw new ArgumentNullException(nameof(property));
             if (property.Body.NodeType != ExpressionType.MemberAccess)
-                throw new ArgumentException("Only member access expressions are allowed.", nameof(property));
+                Error.Raise(new ArgumentException("Only member access expressions are allowed.", nameof(property)), 
+                    Errors.OnlyMemberAccessExpressionAreAllowed);
             string name = ((MemberExpression)property.Body).Member.Name;
             builder.Overwrite(name, value);
             return builder;
@@ -20,8 +21,10 @@ namespace TestData.Building.Dynamic
         {
             if (builder == null) throw new ArgumentNullException(nameof(builder));
             if (property == null) throw new ArgumentNullException(nameof(property));
+            if (getValue == null) throw new ArgumentNullException(nameof(getValue));
             if (property.Body.NodeType != ExpressionType.MemberAccess)
-                throw new ArgumentException("Only member access expressions are allowed.", nameof(property));
+                Error.Raise(new ArgumentException("Only member access expressions are allowed.", nameof(property)),
+                    Errors.OnlyMemberAccessExpressionAreAllowed);
             string name = ((MemberExpression)property.Body).Member.Name;
             builder.Overwrite(name, getValue(builder));
             return builder;
@@ -32,7 +35,8 @@ namespace TestData.Building.Dynamic
             if (builder == null) throw new ArgumentNullException(nameof(builder));
             if (property == null) throw new ArgumentNullException(nameof(property));
             if (property.Body.NodeType != ExpressionType.MemberAccess)
-                throw new ArgumentException("Only member access expressions are allowed.", nameof(property));
+                Error.Raise(new ArgumentException("Only member access expressions are allowed.", nameof(property)),
+                    Errors.OnlyMemberAccessExpressionAreAllowed);
             string name = ((MemberExpression)property.Body).Member.Name;
             return
                 builder.IsOverwritten(name)

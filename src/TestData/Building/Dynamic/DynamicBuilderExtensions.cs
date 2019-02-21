@@ -5,12 +5,16 @@ namespace TestData.Building.Dynamic
 {
     public static class DynamicBuilderExtensions
     {
+        public static IDynamicBuilder<T> WithNull<T, TProperty>(this IDynamicBuilder<T> builder, Expression<Func<T, TProperty>> property) where TProperty : class => WithValue(builder, property, null);
+
+        public static IDynamicBuilder<T> WithDefault<T, TProperty>(this IDynamicBuilder<T> builder, Expression<Func<T, TProperty>> property) => WithValue(builder, property, default(TProperty));
+
         public static IDynamicBuilder<T> WithValue<T, TProperty>(this IDynamicBuilder<T> builder, Expression<Func<T, TProperty>> property, TProperty value)
         {
             if (builder == null) throw new ArgumentNullException(nameof(builder));
             if (property == null) throw new ArgumentNullException(nameof(property));
             if (property.Body.NodeType != ExpressionType.MemberAccess)
-                Error.Raise(new ArgumentException("Only member access expressions are allowed.", nameof(property)), 
+                Error.Raise(new ArgumentException("Only member access expressions are allowed.", nameof(property)),
                     Errors.OnlyMemberAccessExpressionAreAllowed);
             string name = ((MemberExpression)property.Body).Member.Name;
             builder.Overwrite(name, value);

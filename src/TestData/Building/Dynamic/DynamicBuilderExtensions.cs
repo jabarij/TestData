@@ -1,13 +1,23 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 
 namespace TestData.Building.Dynamic
 {
     public static class DynamicBuilderExtensions
     {
-        public static IDynamicBuilder<T> WithNull<T, TProperty>(this IDynamicBuilder<T> builder, Expression<Func<T, TProperty>> property) where TProperty : class => WithValue(builder, property, null);
+        public static IDynamicBuilder<T> WithNull<T, TProperty>(this IDynamicBuilder<T> builder, Expression<Func<T, TProperty>> property) where TProperty : class =>
+            WithValue(builder, property, null);
 
-        public static IDynamicBuilder<T> WithDefault<T, TProperty>(this IDynamicBuilder<T> builder, Expression<Func<T, TProperty>> property) => WithValue(builder, property, default(TProperty));
+        public static IDynamicBuilder<T> WithEmpty<T, TElement>(this IDynamicBuilder<T> builder, Expression<Func<T, IEnumerable<TElement>>> property) =>
+            WithValue(builder, property, Enumerable.Empty<TElement>());
+
+        public static IDynamicBuilder<T> WithEmpty<T>(this IDynamicBuilder<T> builder, Expression<Func<T, string>> property) =>
+            WithValue(builder, property, string.Empty);
+
+        public static IDynamicBuilder<T> WithDefault<T, TProperty>(this IDynamicBuilder<T> builder, Expression<Func<T, TProperty>> property) =>
+            WithValue(builder, property, default(TProperty));
 
         public static IDynamicBuilder<T> WithValue<T, TProperty>(this IDynamicBuilder<T> builder, Expression<Func<T, TProperty>> property, TProperty value)
         {

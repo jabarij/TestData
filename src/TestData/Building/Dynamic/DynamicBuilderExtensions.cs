@@ -19,6 +19,9 @@ namespace TestData.Building.Dynamic
         public static IDynamicBuilder<T> WithEmpty<T>(this IDynamicBuilder<T> builder, Expression<Func<T, string>> property) =>
             WithValue(builder, property, string.Empty);
 
+        public static IDynamicBuilder<T> WithOne<T, TElement>(this IDynamicBuilder<T> builder, Expression<Func<T, IEnumerable<TElement>>> property, TElement element) =>
+            WithValue(builder, property, new[] { element }.AsEnumerable());
+
         public static IDynamicBuilder<T> WithMany<T, TElement>(this IDynamicBuilder<T> builder, Expression<Func<T, IEnumerable<TElement>>> property, int count, Func<int, TElement> elementFactory)
         {
             if (count < 1) throw new ArgumentOutOfRangeException(nameof(count), count, "Elements count must be greater than zero.");

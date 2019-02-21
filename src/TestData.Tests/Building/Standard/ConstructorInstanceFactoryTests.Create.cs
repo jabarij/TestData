@@ -21,8 +21,7 @@ namespace TestData.Building.Standard
 
                 // assert
                 var exception = create.Should().Throw<InvalidOperationException>().And;
-                exception.Data.Contains(ErrorCodes.ErrorCodeExceptionDataKey).Should().BeTrue();
-                exception.Data[ErrorCodes.ErrorCodeExceptionDataKey].Should().Be(ErrorCodes.ConstructorNotFoundErrorCode);
+                exception.Data[Errors.ErrorCodeExceptionDataKey].Should().Be(Errors.ConstructorNotFound.Code);
             }
 
             [Fact]

@@ -7,9 +7,9 @@ using Xunit;
 
 namespace TestData.Building.Dynamic
 {
-    partial class DynamicBuilderExtensionTests
+    partial class DynamicBuilderExtensionsTests
     {
-        public class WithEmpty_String : DynamicBuilderExtensionTests
+        public class WithOne : DynamicBuilderExtensionsTests
         {
             [Fact]
             public void NullBuilder_ShouldThrow()
@@ -18,7 +18,7 @@ namespace TestData.Building.Dynamic
                 IDynamicBuilder<TestClass> builder = null;
 
                 // act
-                Action withValue = () => DynamicBuilderExtensions.WithEmpty(builder, e => e.StringProperty);
+                Action withValue = () => DynamicBuilderExtensions.WithOne(builder, e => e.EnumerableProperty, 1);
 
                 // assert
                 withValue.Should().Throw<ArgumentNullException>();
@@ -31,7 +31,7 @@ namespace TestData.Building.Dynamic
                 var builderMock = new Mock<IDynamicBuilder<TestClass>>();
 
                 // act
-                Action withValue = () => DynamicBuilderExtensions.WithEmpty<TestClass, string>(builderMock.Object, null);
+                Action withValue = () => DynamicBuilderExtensions.WithOne(builderMock.Object, null, 1);
 
                 // assert
                 withValue.Should().Throw<ArgumentNullException>();
@@ -44,7 +44,7 @@ namespace TestData.Building.Dynamic
                 var builderMock = new Mock<IDynamicBuilder<TestClass>>();
 
                 // act
-                Action withValue = () => DynamicBuilderExtensions.WithEmpty(builderMock.Object, e => e.StringFunction());
+                Action withValue = () => DynamicBuilderExtensions.WithOne(builderMock.Object, e => e.EnumerableFunction(), 1);
 
                 // assert
                 var exception = withValue.Should().Throw<ArgumentException>().And;
@@ -56,18 +56,19 @@ namespace TestData.Building.Dynamic
             {
                 // arrange
                 var builderMock = new Mock<IDynamicBuilder<TestClass>>();
+                int expectedValue = 1;
 
                 // act
-                var builder = DynamicBuilderExtensions.WithEmpty(builderMock.Object, e => e.StringProperty);
+                var builder = DynamicBuilderExtensions.WithOne(builderMock.Object, e => e.EnumerableProperty, expectedValue);
 
                 // assert
-                builderMock.Verify(e => e.Overwrite(nameof(TestClass.StringProperty), string.Empty), Times.Once);
+                builderMock.Verify(e => e.Overwrite(nameof(TestClass.EnumerableProperty), It.Is<IEnumerable<int>>(en => en.SequenceEqual(new[] { expectedValue }))), Times.Once);
             }
 
             public class TestClass
             {
-                public string StringProperty { get; set; }
-                public string StringFunction() => null;
+                public IEnumerable<int> EnumerableProperty { get; set; }
+                public IEnumerable<int> EnumerableFunction() => null;
             }
         }
     }

@@ -11,7 +11,7 @@ namespace TestData.Building
                 fixedInstance
                 ? new DynamicBuilder<T>(new FixedInstanceFactory<T>(template))
                 : new DynamicBuilder<T>();
-            if (template != null)
+            if (!fixedInstance && template != null)
                 builder.OverwriteAll(template);
             return builder;
         }

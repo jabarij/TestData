@@ -30,6 +30,16 @@ namespace TestData.Building.Dynamic
             return WithValue(builder, property, elements);
         }
 
+        public static IDynamicBuilder<TParent> WithChild<TParent, TChild>(
+            this IDynamicBuilder<TParent> builder,
+            Expression<Func<TParent, TChild>> childProperty,
+            Func<IDynamicBuilder<TChild>, IDynamicBuilder<TChild>> buildChild)
+            where TChild : class =>
+            WithValue(builder, childProperty,
+                (buildChild??throw new ArgumentNullException(nameof(buildChild))).Invoke(
+                    Build.Dynamically(
+                        GetOverwrittenValue(builder, childProperty))).Build());
+
         public static IDynamicBuilder<T> WithDefault<T, TProperty>(this IDynamicBuilder<T> builder, Expression<Func<T, TProperty>> property) =>
             WithValue(builder, property, default(TProperty));
 
@@ -71,6 +81,5 @@ namespace TestData.Building.Dynamic
                 ? builder.GetOverwrittenValue<TProperty>(name)
                 : default(TProperty);
         }
-
     }
 }

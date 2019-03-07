@@ -5,9 +5,9 @@ using Xunit;
 
 namespace TestData.Building.Dynamic
 {
-    partial class DynamicBuilderExtensionTests
+    partial class DynamicBuilderExtensionsTests
     {
-        public class WithDependentValue : DynamicBuilderExtensionTests
+        public class WithDependentValue : DynamicBuilderExtensionsTests
         {
             [Fact]
             public void NullBuilder_ShouldThrow()

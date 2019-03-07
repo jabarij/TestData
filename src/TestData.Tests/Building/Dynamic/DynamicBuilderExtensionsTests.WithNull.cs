@@ -1,15 +1,13 @@
 ﻿using FluentAssertions;
 using Moq;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using Xunit;
 
 namespace TestData.Building.Dynamic
 {
-    partial class DynamicBuilderExtensionTests
+    partial class DynamicBuilderExtensionsTests
     {
-        public class WithMany : DynamicBuilderExtensionTests
+        public class WithNull : DynamicBuilderExtensionsTests
         {
             [Fact]
             public void NullBuilder_ShouldThrow()
@@ -18,7 +16,7 @@ namespace TestData.Building.Dynamic
                 IDynamicBuilder<TestClass> builder = null;
 
                 // act
-                Action withValue = () => DynamicBuilderExtensions.WithMany(builder, e => e.EnumerableProperty, 2, idx => idx.ToString());
+                Action withValue = () => DynamicBuilderExtensions.WithNull(builder, e => e.StringProperty);
 
                 // assert
                 withValue.Should().Throw<ArgumentNullException>();
@@ -31,7 +29,7 @@ namespace TestData.Building.Dynamic
                 var builderMock = new Mock<IDynamicBuilder<TestClass>>();
 
                 // act
-                Action withValue = () => DynamicBuilderExtensions.WithMany<TestClass, string>(builderMock.Object, null, 2, idx => idx.ToString());
+                Action withValue = () => DynamicBuilderExtensions.WithNull<TestClass, string>(builderMock.Object, null);
 
                 // assert
                 withValue.Should().Throw<ArgumentNullException>();
@@ -44,47 +42,45 @@ namespace TestData.Building.Dynamic
                 var builderMock = new Mock<IDynamicBuilder<TestClass>>();
 
                 // act
-                Action withValue = () => DynamicBuilderExtensions.WithMany(builderMock.Object, e => e.EnumerableFunction(), 2, idx => idx.ToString());
+                Action withValue = () => DynamicBuilderExtensions.WithNull(builderMock.Object, e => e.StringFunction());
 
                 // assert
                 var exception = withValue.Should().Throw<ArgumentException>().And;
                 exception.Data[Errors.ErrorCodeExceptionDataKey].Should().Be(Errors.OnlyMemberAccessExpressionAreAllowed.Code);
             }
 
-            [Theory]
-            [InlineData(0)]
-            [InlineData(-1)]
-            [InlineData(-657)]
-            public void CountLowerThanOrEqualZero_ShouldThrow(int count)
+            [Fact]
+            public void ClassProperty_ShouldOverwritePropertyByExpression()
             {
                 // arrange
                 var builderMock = new Mock<IDynamicBuilder<TestClass>>();
 
                 // act
-                Action withValue = () => DynamicBuilderExtensions.WithMany(builderMock.Object, e => e.EnumerableFunction(), count, idx => idx.ToString());
+                var builder = DynamicBuilderExtensions.WithNull(builderMock.Object, e => e.StringProperty);
 
                 // assert
-                var exception = withValue.Should().Throw<ArgumentOutOfRangeException>().And;
-                exception.ActualValue.Should().Be(count);
+                builderMock.Verify(e => e.Overwrite(nameof(TestClass.StringProperty), (string)null), Times.Once);
             }
 
             [Fact]
-            public void ShouldOverwritePropertyByExpression()
+            public void NullableProperty_ShouldOverwritePropertyByExpression()
             {
                 // arrange
                 var builderMock = new Mock<IDynamicBuilder<TestClass>>();
 
                 // act
-                var builder = DynamicBuilderExtensions.WithMany(builderMock.Object, e => e.EnumerableProperty, 2, idx => idx.ToString());
+                var builder = DynamicBuilderExtensions.WithNull(builderMock.Object, e => e.NullableInt32Property);
 
                 // assert
-                builderMock.Verify(e => e.Overwrite(nameof(TestClass.EnumerableProperty), It.Is<IEnumerable<string>>(en => en.SequenceEqual(new[] { "0", "1" }))), Times.Once);
+                builderMock.Verify(e => e.Overwrite(nameof(TestClass.NullableInt32Property), (int?)null), Times.Once);
             }
 
             public class TestClass
             {
-                public IEnumerable<string> EnumerableProperty { get; set; }
-                public IEnumerable<string> EnumerableFunction() => null;
+                public string StringProperty { get; set; }
+                public string StringFunction() => null;
+                public int? NullableInt32Property { get; set; }
+
             }
         }
     }

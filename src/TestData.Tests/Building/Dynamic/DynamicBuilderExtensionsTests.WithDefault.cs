@@ -7,7 +7,7 @@ namespace TestData.Building.Dynamic
 {
     partial class DynamicBuilderExtensionsTests
     {
-        public class WithNull : DynamicBuilderExtensionsTests
+        public class WithDefault : DynamicBuilderExtensionsTests
         {
             [Fact]
             public void NullBuilder_ShouldThrow()
@@ -16,7 +16,7 @@ namespace TestData.Building.Dynamic
                 IDynamicBuilder<TestClass> builder = null;
 
                 // act
-                Action withValue = () => DynamicBuilderExtensions.WithNull(builder, e => e.StringProperty);
+                Action withValue = () => DynamicBuilderExtensions.WithDefault(builder, e => e.StringProperty);
 
                 // assert
                 withValue.Should().Throw<ArgumentNullException>();
@@ -29,7 +29,7 @@ namespace TestData.Building.Dynamic
                 var builderMock = new Mock<IDynamicBuilder<TestClass>>();
 
                 // act
-                Action withValue = () => DynamicBuilderExtensions.WithNull<TestClass, string>(builderMock.Object, null);
+                Action withValue = () => DynamicBuilderExtensions.WithDefault<TestClass, string>(builderMock.Object, null);
 
                 // assert
                 withValue.Should().Throw<ArgumentNullException>();
@@ -42,7 +42,7 @@ namespace TestData.Building.Dynamic
                 var builderMock = new Mock<IDynamicBuilder<TestClass>>();
 
                 // act
-                Action withValue = () => DynamicBuilderExtensions.WithNull(builderMock.Object, e => e.StringFunction());
+                Action withValue = () => DynamicBuilderExtensions.WithDefault(builderMock.Object, e => e.StringFunction());
 
                 // assert
                 var exception = withValue.Should().Throw<ArgumentException>().And;
@@ -56,7 +56,7 @@ namespace TestData.Building.Dynamic
                 var builderMock = new Mock<IDynamicBuilder<TestClass>>();
 
                 // act
-                var builder = DynamicBuilderExtensions.WithNull(builderMock.Object, e => e.StringProperty);
+                var builder = DynamicBuilderExtensions.WithDefault(builderMock.Object, e => e.StringProperty);
 
                 // assert
                 builderMock.Verify(e => e.Overwrite(nameof(TestClass.StringProperty), (string)null), Times.Once);
@@ -69,10 +69,23 @@ namespace TestData.Building.Dynamic
                 var builderMock = new Mock<IDynamicBuilder<TestClass>>();
 
                 // act
-                var builder = DynamicBuilderExtensions.WithNull(builderMock.Object, e => e.NullableInt32Property);
+                var builder = DynamicBuilderExtensions.WithDefault(builderMock.Object, e => e.NullableInt32Property);
 
                 // assert
                 builderMock.Verify(e => e.Overwrite(nameof(TestClass.NullableInt32Property), (int?)null), Times.Once);
+            }
+
+            [Fact]
+            public void StructProperty_ShouldOverwriteWithDefaultValue()
+            {
+                // arrange
+                var builderMock = new Mock<IDynamicBuilder<TestClass>>();
+
+                // act
+                var builder = DynamicBuilderExtensions.WithDefault(builderMock.Object, e => e.GuidProperty);
+
+                // assert
+                builderMock.Verify(e => e.Overwrite(nameof(TestClass.GuidProperty), Guid.Empty), Times.Once);
             }
 
             public class TestClass
@@ -80,7 +93,7 @@ namespace TestData.Building.Dynamic
                 public string StringProperty { get; set; }
                 public string StringFunction() => null;
                 public int? NullableInt32Property { get; set; }
-
+                public Guid GuidProperty { get; set; }
             }
         }
     }

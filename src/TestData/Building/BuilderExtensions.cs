@@ -34,7 +34,7 @@ namespace TestData.Building
             return builder;
         }
 
-        public static TParentBuilder WithDependendValue<TParentBuilder, TChildBuilder, TProperty>(
+        public static TParentBuilder WithDependentValue<TParentBuilder, TChildBuilder, TProperty>(
             this TParentBuilder builder,
             Func<TParentBuilder, TChildBuilder> childBuilder,
             Func<TChildBuilder, IValueSetter<TProperty>> property,

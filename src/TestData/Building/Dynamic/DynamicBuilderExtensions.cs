@@ -22,6 +22,18 @@ namespace TestData.Building.Dynamic
         public static IDynamicBuilder<T> WithOne<T, TElement>(this IDynamicBuilder<T> builder, Expression<Func<T, IEnumerable<TElement>>> property, TElement element) =>
             WithValue(builder, property, new[] { element }.AsEnumerable());
 
+        public static IDynamicBuilder<T> WithElement<T, TElement>(this IDynamicBuilder<T> builder, Expression<Func<T, IEnumerable<TElement>>> property, TElement element)
+        {
+            var value = builder.GetOverwrittenValue(property);
+            if (value == null)
+                value = new[] { element };
+            else if (value is ICollection<TElement> collection && !collection.IsReadOnly)
+                collection.Add(element);
+            else
+                value = value.Concat(new[] { element });
+            return WithValue(builder, property, value);
+        }
+
         public static IDynamicBuilder<T> WithMany<T, TElement>(this IDynamicBuilder<T> builder, Expression<Func<T, IEnumerable<TElement>>> property, int count, Func<int, TElement> elementFactory)
         {
             if (count < 1) throw new ArgumentOutOfRangeException(nameof(count), count, "Elements count must be greater than zero.");
@@ -36,7 +48,7 @@ namespace TestData.Building.Dynamic
             Func<IDynamicBuilder<TChild>, IDynamicBuilder<TChild>> buildChild)
             where TChild : class =>
             WithValue(builder, childProperty,
-                (buildChild??throw new ArgumentNullException(nameof(buildChild))).Invoke(
+                (buildChild ?? throw new ArgumentNullException(nameof(buildChild))).Invoke(
                     Build.Dynamically(
                         GetOverwrittenValue(builder, childProperty))).Build());
 

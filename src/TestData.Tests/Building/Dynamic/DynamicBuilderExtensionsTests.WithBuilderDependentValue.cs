@@ -7,7 +7,7 @@ namespace TestData.Building.Dynamic
 {
     partial class DynamicBuilderExtensionsTests
     {
-        public class WithDependentValue : DynamicBuilderExtensionsTests
+        public class WithBuilderDependentValue : DynamicBuilderExtensionsTests
         {
             [Fact]
             public void NullBuilder_ShouldThrow()
@@ -16,7 +16,7 @@ namespace TestData.Building.Dynamic
                 IDynamicBuilder<TestClass> builder = null;
 
                 // act
-                Action withValue = () => DynamicBuilderExtensions.WithDependentValue(builder, e => e.MinValueProperty, db => 1);
+                Action withValue = () => DynamicBuilderExtensions.WithBuilderDependentValue(builder, e => e.MinValueProperty, db => db.GetOverwrittenValue(e => e.MinValueProperty) + 1);
 
                 // assert
                 withValue.Should().Throw<ArgumentNullException>();
@@ -29,7 +29,7 @@ namespace TestData.Building.Dynamic
                 var builderMock = new Mock<IDynamicBuilder<TestClass>>();
 
                 // act
-                Action withValue = () => DynamicBuilderExtensions.WithDependentValue(builderMock.Object, null, db => 1);
+                Action withValue = () => DynamicBuilderExtensions.WithBuilderDependentValue(builderMock.Object, null, db => db.GetOverwrittenValue(e => e.MinValueProperty) + 1);
 
                 // assert
                 withValue.Should().Throw<ArgumentNullException>();
@@ -42,7 +42,7 @@ namespace TestData.Building.Dynamic
                 var builderMock = new Mock<IDynamicBuilder<TestClass>>();
 
                 // act
-                Action withValue = () => DynamicBuilderExtensions.WithDependentValue(builderMock.Object, e => e.MinValueProperty, null);
+                Action withValue = () => DynamicBuilderExtensions.WithBuilderDependentValue(builderMock.Object, e => e.MinValueProperty, null);
 
                 // assert
                 withValue.Should().Throw<ArgumentNullException>();
@@ -55,7 +55,7 @@ namespace TestData.Building.Dynamic
                 var builderMock = new Mock<IDynamicBuilder<TestClass>>();
 
                 // act
-                Action withValue = () => DynamicBuilderExtensions.WithDependentValue(builderMock.Object, e => e.Int32Function(), db => 1);
+                Action withValue = () => DynamicBuilderExtensions.WithBuilderDependentValue(builderMock.Object, e => e.Int32Function(), db => db.GetOverwrittenValue(e => e.MinValueProperty) + 1);
 
                 // assert
                 var exception = withValue.Should().Throw<ArgumentException>().And;
@@ -68,11 +68,12 @@ namespace TestData.Building.Dynamic
                 // arrange
                 var builderMock = new Mock<IDynamicBuilder<TestClass>>();
                 int minValue = 1;
-                builderMock.Setup(e => e.Build()).Returns(new TestClass { MinValueProperty = minValue });
+                builderMock.Setup(e => e.IsOverwritten(nameof(TestClass.MinValueProperty))).Returns(true);
+                builderMock.Setup(e => e.GetOverwrittenValue<int>(nameof(TestClass.MinValueProperty))).Returns(minValue);
                 int expectedMaxValue = minValue + 1;
 
                 // act
-                var builder = DynamicBuilderExtensions.WithDependentValue(builderMock.Object, e => e.MaxValueProperty, lender => lender.MinValueProperty + 1);
+                var builder = DynamicBuilderExtensions.WithBuilderDependentValue(builderMock.Object, e => e.MaxValueProperty, lenderBuilder => lenderBuilder.GetOverwrittenValue(e => e.MinValueProperty) + 1);
 
                 // assert
                 builderMock.Verify(e => e.Overwrite(nameof(TestClass.MaxValueProperty), expectedMaxValue), Times.Once);

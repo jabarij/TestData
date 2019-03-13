@@ -67,7 +67,7 @@ namespace TestData.Building.Dynamic
             return builder;
         }
 
-        public static IDynamicBuilder<T> WithDependentValue<T, TProperty>(this IDynamicBuilder<T> builder, Expression<Func<T, TProperty>> property, Func<IDynamicBuilder<T>, TProperty> getValue)
+        public static IDynamicBuilder<T> WithBuilderDependentValue<T, TProperty>(this IDynamicBuilder<T> builder, Expression<Func<T, TProperty>> property, Func<IDynamicBuilder<T>, TProperty> getValue)
         {
             if (builder == null) throw new ArgumentNullException(nameof(builder));
             if (property == null) throw new ArgumentNullException(nameof(property));
@@ -78,6 +78,12 @@ namespace TestData.Building.Dynamic
             string name = ((MemberExpression)property.Body).Member.Name;
             builder.Overwrite(name, getValue(builder));
             return builder;
+        }
+
+        public static IDynamicBuilder<T> WithDependentValue<T, TProperty>(this IDynamicBuilder<T> builder, Expression<Func<T, TProperty>> property, Func<T, TProperty> getValue)
+        {
+            if (getValue == null) throw new ArgumentNullException(nameof(getValue));
+            return WithBuilderDependentValue(builder, property, b => getValue(b.Build()));
         }
 
         public static TProperty GetOverwrittenValue<T, TProperty>(this IDynamicBuilder<T> builder, Expression<Func<T, TProperty>> property)

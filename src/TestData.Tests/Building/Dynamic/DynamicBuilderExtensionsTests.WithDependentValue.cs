@@ -16,10 +16,10 @@ namespace TestData.Building.Dynamic
                 IDynamicBuilder<TestClass> builder = null;
 
                 // act
-                Action withValue = () => DynamicBuilderExtensions.WithDependentValue(builder, e => e.MinValueProperty, db => 1);
+                Action withDependentValue = () => DynamicBuilderExtensions.WithDependentValue(builder, e => e.MinValueProperty, db => 1);
 
                 // assert
-                withValue.Should().Throw<ArgumentNullException>();
+                withDependentValue.Should().Throw<ArgumentNullException>();
             }
 
             [Fact]
@@ -29,10 +29,10 @@ namespace TestData.Building.Dynamic
                 var builderMock = new Mock<IDynamicBuilder<TestClass>>();
 
                 // act
-                Action withValue = () => DynamicBuilderExtensions.WithDependentValue(builderMock.Object, null, db => 1);
+                Action withDependentValue = () => DynamicBuilderExtensions.WithDependentValue(builderMock.Object, null, db => 1);
 
                 // assert
-                withValue.Should().Throw<ArgumentNullException>();
+                withDependentValue.Should().Throw<ArgumentNullException>();
             }
 
             [Fact]
@@ -42,10 +42,10 @@ namespace TestData.Building.Dynamic
                 var builderMock = new Mock<IDynamicBuilder<TestClass>>();
 
                 // act
-                Action withValue = () => DynamicBuilderExtensions.WithDependentValue(builderMock.Object, e => e.MinValueProperty, null);
+                Action withDependentValue = () => DynamicBuilderExtensions.WithDependentValue(builderMock.Object, e => e.MinValueProperty, null);
 
                 // assert
-                withValue.Should().Throw<ArgumentNullException>();
+                withDependentValue.Should().Throw<ArgumentNullException>();
             }
 
             [Fact]
@@ -55,10 +55,10 @@ namespace TestData.Building.Dynamic
                 var builderMock = new Mock<IDynamicBuilder<TestClass>>();
 
                 // act
-                Action withValue = () => DynamicBuilderExtensions.WithDependentValue(builderMock.Object, e => e.Int32Function(), db => 1);
+                Action withDependentValue = () => DynamicBuilderExtensions.WithDependentValue(builderMock.Object, e => e.Int32Function(), db => 1);
 
                 // assert
-                var exception = withValue.Should().Throw<ArgumentException>().And;
+                var exception = withDependentValue.Should().Throw<ArgumentException>().And;
                 exception.Data[Errors.ErrorCodeExceptionDataKey].Should().Be(Errors.OnlyMemberAccessExpressionAreAllowed.Code);
             }
 

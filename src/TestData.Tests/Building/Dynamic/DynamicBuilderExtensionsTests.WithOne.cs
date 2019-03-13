@@ -18,10 +18,10 @@ namespace TestData.Building.Dynamic
                 IDynamicBuilder<TestClass> builder = null;
 
                 // act
-                Action withValue = () => DynamicBuilderExtensions.WithOne(builder, e => e.EnumerableProperty, 1);
+                Action withOne = () => DynamicBuilderExtensions.WithOne(builder, e => e.EnumerableProperty, 1);
 
                 // assert
-                withValue.Should().Throw<ArgumentNullException>();
+                withOne.Should().Throw<ArgumentNullException>();
             }
 
             [Fact]
@@ -31,10 +31,10 @@ namespace TestData.Building.Dynamic
                 var builderMock = new Mock<IDynamicBuilder<TestClass>>();
 
                 // act
-                Action withValue = () => DynamicBuilderExtensions.WithOne(builderMock.Object, null, 1);
+                Action withOne = () => DynamicBuilderExtensions.WithOne(builderMock.Object, null, 1);
 
                 // assert
-                withValue.Should().Throw<ArgumentNullException>();
+                withOne.Should().Throw<ArgumentNullException>();
             }
 
             [Fact]
@@ -44,10 +44,10 @@ namespace TestData.Building.Dynamic
                 var builderMock = new Mock<IDynamicBuilder<TestClass>>();
 
                 // act
-                Action withValue = () => DynamicBuilderExtensions.WithOne(builderMock.Object, e => e.EnumerableFunction(), 1);
+                Action withOne = () => DynamicBuilderExtensions.WithOne(builderMock.Object, e => e.EnumerableFunction(), 1);
 
                 // assert
-                var exception = withValue.Should().Throw<ArgumentException>().And;
+                var exception = withOne.Should().Throw<ArgumentException>().And;
                 exception.Data[Errors.ErrorCodeExceptionDataKey].Should().Be(Errors.OnlyMemberAccessExpressionAreAllowed.Code);
             }
 

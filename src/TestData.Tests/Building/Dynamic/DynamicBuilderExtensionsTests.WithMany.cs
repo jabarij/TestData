@@ -18,10 +18,10 @@ namespace TestData.Building.Dynamic
                 IDynamicBuilder<TestClass> builder = null;
 
                 // act
-                Action withValue = () => DynamicBuilderExtensions.WithMany(builder, e => e.EnumerableProperty, 2, idx => idx.ToString());
+                Action withMany = () => DynamicBuilderExtensions.WithMany(builder, e => e.EnumerableProperty, 2, idx => idx.ToString());
 
                 // assert
-                withValue.Should().Throw<ArgumentNullException>();
+                withMany.Should().Throw<ArgumentNullException>();
             }
 
             [Fact]
@@ -31,10 +31,10 @@ namespace TestData.Building.Dynamic
                 var builderMock = new Mock<IDynamicBuilder<TestClass>>();
 
                 // act
-                Action withValue = () => DynamicBuilderExtensions.WithMany<TestClass, string>(builderMock.Object, null, 2, idx => idx.ToString());
+                Action withMany = () => DynamicBuilderExtensions.WithMany<TestClass, string>(builderMock.Object, null, 2, idx => idx.ToString());
 
                 // assert
-                withValue.Should().Throw<ArgumentNullException>();
+                withMany.Should().Throw<ArgumentNullException>();
             }
 
             [Fact]
@@ -44,10 +44,10 @@ namespace TestData.Building.Dynamic
                 var builderMock = new Mock<IDynamicBuilder<TestClass>>();
 
                 // act
-                Action withValue = () => DynamicBuilderExtensions.WithMany(builderMock.Object, e => e.EnumerableFunction(), 2, idx => idx.ToString());
+                Action withMany = () => DynamicBuilderExtensions.WithMany(builderMock.Object, e => e.EnumerableFunction(), 2, idx => idx.ToString());
 
                 // assert
-                var exception = withValue.Should().Throw<ArgumentException>().And;
+                var exception = withMany.Should().Throw<ArgumentException>().And;
                 exception.Data[Errors.ErrorCodeExceptionDataKey].Should().Be(Errors.OnlyMemberAccessExpressionAreAllowed.Code);
             }
 
@@ -61,10 +61,10 @@ namespace TestData.Building.Dynamic
                 var builderMock = new Mock<IDynamicBuilder<TestClass>>();
 
                 // act
-                Action withValue = () => DynamicBuilderExtensions.WithMany(builderMock.Object, e => e.EnumerableFunction(), count, idx => idx.ToString());
+                Action withMany = () => DynamicBuilderExtensions.WithMany(builderMock.Object, e => e.EnumerableFunction(), count, idx => idx.ToString());
 
                 // assert
-                var exception = withValue.Should().Throw<ArgumentOutOfRangeException>().And;
+                var exception = withMany.Should().Throw<ArgumentOutOfRangeException>().And;
                 exception.ActualValue.Should().Be(count);
             }
 

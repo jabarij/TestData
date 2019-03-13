@@ -52,6 +52,28 @@ namespace TestData.Building.Dynamic
                     Build.Dynamically(
                         GetOverwrittenValue(builder, childProperty))).Build());
 
+        public static IDynamicBuilder<TParent> WithBuilderDependentChild<TParent, TChild>(
+            this IDynamicBuilder<TParent> builder,
+            Expression<Func<TParent, TChild>> childProperty,
+            Func<IDynamicBuilder<TParent>, IDynamicBuilder<TChild>, IDynamicBuilder<TChild>> buildChild)
+            where TChild : class
+        {
+            if (buildChild == null) throw new ArgumentNullException(nameof(buildChild));
+            var childBuilder = Build.Dynamically(GetOverwrittenValue(builder, childProperty));
+            var child = buildChild(builder, childBuilder).Build();
+            return WithValue(builder, childProperty, child);
+        }
+
+        public static IDynamicBuilder<TParent> WithDependentChild<TParent, TChild>(
+            this IDynamicBuilder<TParent> builder,
+            Expression<Func<TParent, TChild>> childProperty,
+            Func<TParent, IDynamicBuilder<TChild>, IDynamicBuilder<TChild>> buildChild)
+            where TChild : class
+        {
+            if (buildChild == null) throw new ArgumentNullException(nameof(buildChild));
+            return WithBuilderDependentChild(builder, childProperty, (parentBuilder, childBuilder) => buildChild(parentBuilder.Build(), childBuilder));
+        }
+
         public static IDynamicBuilder<T> WithDefault<T, TProperty>(this IDynamicBuilder<T> builder, Expression<Func<T, TProperty>> property) =>
             WithValue(builder, property, default(TProperty));
 

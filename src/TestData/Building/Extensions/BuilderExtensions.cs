@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace TestData.Building
+namespace TestData.Building.Extensions
 {
     public static class BuilderExtensions
     {

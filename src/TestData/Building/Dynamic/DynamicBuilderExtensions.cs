@@ -19,7 +19,7 @@ namespace TestData.Building.Dynamic
         public static IDynamicBuilder<T> WithEmpty<T>(this IDynamicBuilder<T> builder, Expression<Func<T, string>> property) =>
             WithValue(builder, property, string.Empty);
 
-        public static IDynamicBuilder<T> WithOne<T, TElement>(this IDynamicBuilder<T> builder, Expression<Func<T, IEnumerable<TElement>>> property, TElement element) =>
+        public static IDynamicBuilder<T> WithSingle<T, TElement>(this IDynamicBuilder<T> builder, Expression<Func<T, IEnumerable<TElement>>> property, TElement element) =>
             WithValue(builder, property, new[] { element }.AsEnumerable());
 
         public static IDynamicBuilder<T> WithElement<T, TElement>(this IDynamicBuilder<T> builder, Expression<Func<T, IEnumerable<TElement>>> property, TElement element)

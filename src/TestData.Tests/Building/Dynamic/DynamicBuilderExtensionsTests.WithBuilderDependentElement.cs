@@ -82,18 +82,18 @@ namespace TestData.Building.Dynamic
                 var builder = DynamicBuilderExtensions.WithBuilderDependentElement(builderMock.Object, e => e.EnumerableProperty, obj => obj.GetOverwrittenValue(e => e.MinValueProperty) + 1);
 
                 // assert
-                builderMock.Verify(e => e.Overwrite(nameof(TestClass.EnumerableProperty), It.Is<IEnumerable<int>>(en => en.SequenceEqual(new[] { expectedValue }))), Times.Once);
+                builderMock.Verify(e => e.Overwrite(nameof(TestClass.EnumerableProperty), It.Is<IEnumerable<int>>(en => en.SequenceEqual(new List<int> { expectedValue }))), Times.Once);
             }
 
             [Fact]
-            public void NonCollectionEnumerableWithBuilderDependentElements_ShouldOverwriteWithEnumerableCombinedWithNewElement()
+            public void NonNullEnumerable_ShouldOverwriteWithEnumerableCombinedWithNewElement()
             {
                 // arrange
                 var builderMock = new Mock<IDynamicBuilder<TestClass>>();
                 builderMock.Setup(e => e.IsOverwritten(nameof(TestClass.EnumerableProperty))).Returns(true);
                 builderMock
                     .Setup(e => e.GetOverwrittenValue<IEnumerable<int>>(nameof(TestClass.EnumerableProperty)))
-                    .Returns(new[] { 1, 2 });
+                    .Returns(new List<int> { 1, 2 });
                 int minValue = 1;
                 builderMock.Setup(e => e.IsOverwritten(nameof(TestClass.MinValueProperty))).Returns(true);
                 builderMock.Setup(e => e.GetOverwrittenValue<int>(nameof(TestClass.MinValueProperty))).Returns(minValue);
@@ -103,30 +103,7 @@ namespace TestData.Building.Dynamic
                 var builder = DynamicBuilderExtensions.WithBuilderDependentElement(builderMock.Object, e => e.EnumerableProperty, obj => obj.GetOverwrittenValue(e => e.MinValueProperty) + 1);
 
                 // assert
-                builderMock.Verify(e => e.Overwrite(nameof(TestClass.EnumerableProperty), It.Is<IEnumerable<int>>(en => en.SequenceEqual(new[] { 1, 2, expectedValue }))), Times.Once);
-            }
-
-            [Fact]
-            public void CollectionEnumerableWithBuilderDependentElements_ShouldSetSameEnumerableWithNewElementAdded()
-            {
-                // arrange
-                var builderMock = new Mock<IDynamicBuilder<TestClass>>();
-                var collectionMock = new Mock<ICollection<int>>();
-                builderMock.Setup(e => e.IsOverwritten(nameof(TestClass.EnumerableProperty))).Returns(true);
-                builderMock
-                    .Setup(e => e.GetOverwrittenValue<IEnumerable<int>>(nameof(TestClass.EnumerableProperty)))
-                    .Returns(collectionMock.Object);
-                int minValue = 2;
-                builderMock.Setup(e => e.IsOverwritten(nameof(TestClass.MinValueProperty))).Returns(true);
-                builderMock.Setup(e => e.GetOverwrittenValue<int>(nameof(TestClass.MinValueProperty))).Returns(minValue);
-                int expectedValue = minValue + 1;
-
-                // act
-                var builder = DynamicBuilderExtensions.WithBuilderDependentElement(builderMock.Object, e => e.EnumerableProperty, obj => obj.GetOverwrittenValue(e => e.MinValueProperty) + 1);
-
-                // assert
-                builderMock.Verify(e => e.Overwrite(nameof(TestClass.EnumerableProperty), It.Is<IEnumerable<int>>(en => ReferenceEquals(en, collectionMock.Object))), Times.Once);
-                collectionMock.Verify(e => e.Add(expectedValue), Times.Once);
+                builderMock.Verify(e => e.Overwrite(nameof(TestClass.EnumerableProperty), It.Is<IEnumerable<int>>(en => en.SequenceEqual(new List<int> { 1, 2, expectedValue }))), Times.Once);
             }
 
             public class TestClass

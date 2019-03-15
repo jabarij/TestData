@@ -54,8 +54,6 @@ namespace TestData.Building.Dynamic
             var value = builder.GetOverwrittenValue(enumerableProperty);
             if (value == null)
                 value = new[] { element };
-            else if (value is ICollection<TElement> collection && !collection.IsReadOnly)
-                collection.Add(element);
             else
                 value = value.Concat(new[] { element });
             return WithBuilderDependentValue(builder, enumerableProperty, b => value);
@@ -72,9 +70,6 @@ namespace TestData.Building.Dynamic
             var value = builder.GetOverwrittenValue(enumerableProperty);
             if (value == null)
                 value = elements;
-            else if (value is ICollection<TElement> collection && !collection.IsReadOnly)
-                foreach (var element in elements)
-                    collection.Add(element);
             else
                 value = value.Concat(elements);
             return WithValue(builder, enumerableProperty, value);

@@ -19,8 +19,20 @@ namespace TestData.Building.Dynamic
         public static IDynamicBuilder<T> WithEmpty<T>(this IDynamicBuilder<T> builder, Expression<Func<T, string>> property) =>
             WithValue(builder, property, string.Empty);
 
-        public static IDynamicBuilder<T> WithSingle<T, TElement>(this IDynamicBuilder<T> builder, Expression<Func<T, IEnumerable<TElement>>> property, TElement element) =>
-            WithValue(builder, property, new[] { element }.AsEnumerable());
+        public static IDynamicBuilder<T> WithSingle<T, TElement>(this IDynamicBuilder<T> builder, Expression<Func<T, IEnumerable<TElement>>> enumerableProperty, TElement element) =>
+            WithValue(builder, enumerableProperty, new[] { element }.AsEnumerable());
+
+        public static IDynamicBuilder<T> WithBuilderDependentSingle<T, TElement>(this IDynamicBuilder<T> builder, Expression<Func<T, IEnumerable<TElement>>> enumerableProperty, Func<IDynamicBuilder<T>, TElement> getElement)
+        {
+            if (getElement == null) throw new ArgumentNullException(nameof(getElement));
+            return WithBuilderDependentValue(builder, enumerableProperty, b => new[] { getElement(b) });
+        }
+
+        public static IDynamicBuilder<T> WithDependentSingle<T, TElement>(this IDynamicBuilder<T> builder, Expression<Func<T, IEnumerable<TElement>>> enumerableProperty, Func<T, TElement> getElement)
+        {
+            if (getElement == null) throw new ArgumentNullException(nameof(getElement));
+            return WithBuilderDependentSingle(builder, enumerableProperty, b => getElement(b.Build()));
+        }
 
         public static IDynamicBuilder<T> WithElement<T, TElement>(this IDynamicBuilder<T> builder, Expression<Func<T, IEnumerable<TElement>>> property, TElement element)
         {

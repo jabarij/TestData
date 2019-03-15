@@ -19,27 +19,98 @@ namespace TestData.Building.Dynamic
         public static IDynamicBuilder<T> WithEmpty<T>(this IDynamicBuilder<T> builder, Expression<Func<T, string>> property) =>
             WithValue(builder, property, string.Empty);
 
-        public static IDynamicBuilder<T> WithSingle<T, TElement>(this IDynamicBuilder<T> builder, Expression<Func<T, IEnumerable<TElement>>> property, TElement element) =>
-            WithValue(builder, property, new[] { element }.AsEnumerable());
+        public static IDynamicBuilder<T> WithSingle<T, TElement>(this IDynamicBuilder<T> builder, Expression<Func<T, IEnumerable<TElement>>> enumerableProperty, TElement element) =>
+            WithValue(builder, enumerableProperty, new[] { element }.AsEnumerable());
 
-        public static IDynamicBuilder<T> WithElement<T, TElement>(this IDynamicBuilder<T> builder, Expression<Func<T, IEnumerable<TElement>>> property, TElement element)
+        public static IDynamicBuilder<T> WithBuilderDependentSingle<T, TElement>(this IDynamicBuilder<T> builder, Expression<Func<T, IEnumerable<TElement>>> enumerableProperty, Func<IDynamicBuilder<T>, TElement> getElement)
         {
-            var value = builder.GetOverwrittenValue(property);
+            if (getElement == null) throw new ArgumentNullException(nameof(getElement));
+            return WithBuilderDependentValue(builder, enumerableProperty, b => new[] { getElement(b) });
+        }
+
+        public static IDynamicBuilder<T> WithDependentSingle<T, TElement>(this IDynamicBuilder<T> builder, Expression<Func<T, IEnumerable<TElement>>> enumerableProperty, Func<T, TElement> getElement)
+        {
+            if (getElement == null) throw new ArgumentNullException(nameof(getElement));
+            return WithBuilderDependentSingle(builder, enumerableProperty, b => getElement(b.Build()));
+        }
+
+        public static IDynamicBuilder<T> WithElement<T, TElement>(this IDynamicBuilder<T> builder, Expression<Func<T, IEnumerable<TElement>>> enumerableProperty, TElement element)
+        {
+            var value = builder.GetOverwrittenValue(enumerableProperty);
             if (value == null)
                 value = new[] { element };
             else if (value is ICollection<TElement> collection && !collection.IsReadOnly)
                 collection.Add(element);
             else
                 value = value.Concat(new[] { element });
-            return WithValue(builder, property, value);
+            return WithValue(builder, enumerableProperty, value);
         }
 
-        public static IDynamicBuilder<T> WithMany<T, TElement>(this IDynamicBuilder<T> builder, Expression<Func<T, IEnumerable<TElement>>> property, int count, Func<int, TElement> elementFactory)
+        public static IDynamicBuilder<T> WithBuilderDependentElement<T, TElement>(this IDynamicBuilder<T> builder, Expression<Func<T, IEnumerable<TElement>>> enumerableProperty, Func<IDynamicBuilder<T>, TElement> getElement)
+        {
+            if (builder == null) throw new ArgumentNullException(nameof(builder));
+            if (getElement == null) throw new ArgumentNullException(nameof(getElement));
+            var element = getElement(builder);
+            var value = builder.GetOverwrittenValue(enumerableProperty);
+            if (value == null)
+                value = new[] { element };
+            else if (value is ICollection<TElement> collection && !collection.IsReadOnly)
+                collection.Add(element);
+            else
+                value = value.Concat(new[] { element });
+            return WithBuilderDependentValue(builder, enumerableProperty, b => value);
+        }
+
+        public static IDynamicBuilder<T> WithDependentElement<T, TElement>(this IDynamicBuilder<T> builder, Expression<Func<T, IEnumerable<TElement>>> enumerableProperty, Func<T, TElement> getElement)
+        {
+            if (getElement == null) throw new ArgumentNullException(nameof(getElement));
+            return WithBuilderDependentElement(builder, enumerableProperty, b => getElement(b.Build()));
+        }
+
+        public static IDynamicBuilder<T> WithElements<T, TElement>(this IDynamicBuilder<T> builder, Expression<Func<T, IEnumerable<TElement>>> enumerableProperty, IEnumerable<TElement> elements)
+        {
+            var value = builder.GetOverwrittenValue(enumerableProperty);
+            if (value == null)
+                value = elements;
+            else if (value is ICollection<TElement> collection && !collection.IsReadOnly)
+                foreach (var element in elements)
+                    collection.Add(element);
+            else
+                value = value.Concat(elements);
+            return WithValue(builder, enumerableProperty, value);
+        }
+
+        public static IDynamicBuilder<T> WithBuilderDependentElements<T, TElement>(this IDynamicBuilder<T> builder, Expression<Func<T, IEnumerable<TElement>>> enumerableProperty, Func<IDynamicBuilder<T>, IEnumerable<TElement>> getElements)
+        {
+            if (getElements == null) throw new ArgumentNullException(nameof(getElements));
+            return WithElements(builder, enumerableProperty, getElements(builder));
+        }
+
+        public static IDynamicBuilder<T> WithDependentElements<T, TElement>(this IDynamicBuilder<T> builder, Expression<Func<T, IEnumerable<TElement>>> enumerableProperty, Func<T, IEnumerable<TElement>> getElements)
+        {
+            if (builder == null) throw new ArgumentNullException(nameof(builder));
+            if (getElements == null) throw new ArgumentNullException(nameof(getElements));
+            return WithElements(builder, enumerableProperty, getElements(builder.Build()));
+        }
+
+        public static IDynamicBuilder<T> WithMany<T, TElement>(this IDynamicBuilder<T> builder, Expression<Func<T, IEnumerable<TElement>>> enumerableProperty, int count, Func<int, TElement> elementFactory)
         {
             if (count < 1) throw new ArgumentOutOfRangeException(nameof(count), count, "Elements count must be greater than zero.");
             if (elementFactory == null) throw new ArgumentNullException(nameof(elementFactory));
             var elements = Enumerable.Range(0, count).Select(elementFactory);
-            return WithValue(builder, property, elements);
+            return WithValue(builder, enumerableProperty, elements);
+        }
+
+        public static IDynamicBuilder<T> WithBuilderDependentMany<T, TElement>(this IDynamicBuilder<T> builder, Expression<Func<T, IEnumerable<TElement>>> enumerableProperty, int count, Func<IDynamicBuilder<T>, int, TElement> elementFactory)
+        {
+            if (elementFactory == null) throw new ArgumentNullException(nameof(elementFactory));
+            return WithMany(builder, enumerableProperty, count, idx => elementFactory(builder, idx));
+        }
+
+        public static IDynamicBuilder<T> WithDependentMany<T, TElement>(this IDynamicBuilder<T> builder, Expression<Func<T, IEnumerable<TElement>>> enumerableProperty, int count, Func<T, int, TElement> elementFactory)
+        {
+            if (elementFactory == null) throw new ArgumentNullException(nameof(elementFactory));
+            return WithMany(builder, enumerableProperty, count, idx => elementFactory(builder.Build(), idx));
         }
 
         public static IDynamicBuilder<TParent> WithChild<TParent, TChild>(

@@ -67,6 +67,32 @@ namespace TestData.Building.Dynamic
             return WithBuilderDependentElement(builder, enumerableProperty, b => getElement(b.Build()));
         }
 
+        public static IDynamicBuilder<T> WithElements<T, TElement>(this IDynamicBuilder<T> builder, Expression<Func<T, IEnumerable<TElement>>> enumerableProperty, IEnumerable<TElement> elements)
+        {
+            var value = builder.GetOverwrittenValue(enumerableProperty);
+            if (value == null)
+                value = elements;
+            else if (value is ICollection<TElement> collection && !collection.IsReadOnly)
+                foreach (var element in elements)
+                    collection.Add(element);
+            else
+                value = value.Concat(elements);
+            return WithValue(builder, enumerableProperty, value);
+        }
+
+        public static IDynamicBuilder<T> WithBuilderDependentElements<T, TElement>(this IDynamicBuilder<T> builder, Expression<Func<T, IEnumerable<TElement>>> enumerableProperty, Func<IDynamicBuilder<T>, IEnumerable<TElement>> getElements)
+        {
+            if (getElements == null) throw new ArgumentNullException(nameof(getElements));
+            return WithElements(builder, enumerableProperty, getElements(builder));
+        }
+
+        public static IDynamicBuilder<T> WithDependentElements<T, TElement>(this IDynamicBuilder<T> builder, Expression<Func<T, IEnumerable<TElement>>> enumerableProperty, Func<T, IEnumerable<TElement>> getElements)
+        {
+            if (builder == null) throw new ArgumentNullException(nameof(builder));
+            if (getElements == null) throw new ArgumentNullException(nameof(getElements));
+            return WithElements(builder, enumerableProperty, getElements(builder.Build()));
+        }
+
         public static IDynamicBuilder<T> WithMany<T, TElement>(this IDynamicBuilder<T> builder, Expression<Func<T, IEnumerable<TElement>>> enumerableProperty, int count, Func<int, TElement> elementFactory)
         {
             if (count < 1) throw new ArgumentOutOfRangeException(nameof(count), count, "Elements count must be greater than zero.");

@@ -18,7 +18,7 @@ namespace TestData.Building.Dynamic
                 IDynamicBuilder<TestClass> builder = null;
 
                 // act
-                Action withDependentElements = () => DynamicBuilderExtensions.WithDependentElements(builder, e => e.EnumerableProperty, obj => new[] { 1, 2 });
+                Action withDependentElements = () => DynamicBuilderExtensions.WithDependentElements(builder, e => e.EnumerableProperty, obj => new List<int> { 1, 2 });
 
                 // assert
                 withDependentElements.Should().Throw<ArgumentNullException>();
@@ -31,7 +31,7 @@ namespace TestData.Building.Dynamic
                 var builderMock = new Mock<IDynamicBuilder<TestClass>>();
 
                 // act
-                Action withDependentElements = () => DynamicBuilderExtensions.WithDependentElements(builderMock.Object, null, obj => new[] { 1, 2 });
+                Action withDependentElements = () => DynamicBuilderExtensions.WithDependentElements(builderMock.Object, null, obj => new List<int> { 1, 2 });
 
                 // assert
                 withDependentElements.Should().Throw<ArgumentNullException>();
@@ -57,7 +57,7 @@ namespace TestData.Building.Dynamic
                 var builderMock = new Mock<IDynamicBuilder<TestClass>>();
 
                 // act
-                Action withDependentElements = () => DynamicBuilderExtensions.WithDependentElements(builderMock.Object, e => e.EnumerableFunction(), obj => new[] { 1, 2 });
+                Action withDependentElements = () => DynamicBuilderExtensions.WithDependentElements(builderMock.Object, e => e.EnumerableFunction(), obj => new List<int> { 1, 2 });
 
                 // assert
                 var exception = withDependentElements.Should().Throw<ArgumentException>().And;
@@ -69,8 +69,8 @@ namespace TestData.Building.Dynamic
             {
                 // arrange
                 int additionalElement = 3;
-                var additionalElements = new[] { 4, 5 };
-                var expectedElements = new[] { additionalElement }.Concat(additionalElements);
+                var additionalElements = new List<int> { 4, 5 };
+                var expectedElements = new List<int> { additionalElement }.Concat(additionalElements);
                 var builderMock = new Mock<IDynamicBuilder<TestClass>>();
                 builderMock.Setup(e => e.Build()).Returns(new TestClass { SomeValueProperty = additionalElement });
                 builderMock.Setup(e => e.IsOverwritten(nameof(TestClass.EnumerableProperty))).Returns(true);
@@ -79,20 +79,20 @@ namespace TestData.Building.Dynamic
                     .Returns((IEnumerable<int>)null);
 
                 // act
-                var builder = DynamicBuilderExtensions.WithDependentElements(builderMock.Object, e => e.EnumerableProperty, obj => new[] { obj.SomeValueProperty }.Concat(additionalElements));
+                var builder = DynamicBuilderExtensions.WithDependentElements(builderMock.Object, e => e.EnumerableProperty, obj => new List<int> { obj.SomeValueProperty }.Concat(additionalElements));
 
                 // assert
                 builderMock.Verify(e => e.Overwrite(nameof(TestClass.EnumerableProperty), It.Is<IEnumerable<int>>(en => en.SequenceEqual(expectedElements))), Times.Once);
             }
 
             [Fact]
-            public void NonCollectionEnumerableWithDependentElementss_ShouldOverwriteWithEnumerableCombinedWithNewElement()
+            public void NonNullEnumerable_ShouldOverwriteWithEnumerableCombinedWithNewElement()
             {
                 // arrange
-                var originalElements = new[] { 1, 2 };
+                var originalElements = new List<int> { 1, 2 };
                 int additionalElement = 3;
-                var additionalElements = new[] { 4, 5 };
-                var expectedElements = originalElements.Concat(new[] { additionalElement }).Concat(additionalElements);
+                var additionalElements = new List<int> { 4, 5 };
+                var expectedElements = originalElements.Concat(new List<int> { additionalElement }).Concat(additionalElements);
                 var builderMock = new Mock<IDynamicBuilder<TestClass>>();
                 builderMock.Setup(e => e.Build()).Returns(new TestClass { SomeValueProperty = additionalElement });
                 builderMock.Setup(e => e.IsOverwritten(nameof(TestClass.EnumerableProperty))).Returns(true);
@@ -101,35 +101,10 @@ namespace TestData.Building.Dynamic
                     .Returns(originalElements);
 
                 // act
-                var builder = DynamicBuilderExtensions.WithDependentElements(builderMock.Object, e => e.EnumerableProperty, obj => new[] { obj.SomeValueProperty }.Concat(additionalElements));
+                var builder = DynamicBuilderExtensions.WithDependentElements(builderMock.Object, e => e.EnumerableProperty, obj => new List<int> { obj.SomeValueProperty }.Concat(additionalElements));
 
                 // assert
                 builderMock.Verify(e => e.Overwrite(nameof(TestClass.EnumerableProperty), It.Is<IEnumerable<int>>(en => en.SequenceEqual(expectedElements))), Times.Once);
-            }
-
-            [Fact]
-            public void CollectionEnumerableWithDependentElementss_ShouldSetSameEnumerableWithNewElementAdded()
-            {
-                // arrange
-                var originalElements = new[] { 1, 2 };
-                int additionalElement = 3;
-                var additionalElements = new[] { 4, 5 };
-                var expectedElements = new[] { additionalElement }.Concat(additionalElements);
-                var builderMock = new Mock<IDynamicBuilder<TestClass>>();
-                var collectionMock = new Mock<ICollection<int>>();
-                builderMock.Setup(e => e.Build()).Returns(new TestClass { SomeValueProperty = additionalElement });
-                builderMock.Setup(e => e.IsOverwritten(nameof(TestClass.EnumerableProperty))).Returns(true);
-                builderMock
-                    .Setup(e => e.GetOverwrittenValue<IEnumerable<int>>(nameof(TestClass.EnumerableProperty)))
-                    .Returns(collectionMock.Object);
-
-                // act
-                var builder = DynamicBuilderExtensions.WithDependentElements(builderMock.Object, e => e.EnumerableProperty, obj => new[] { obj.SomeValueProperty }.Concat(additionalElements));
-
-                // assert
-                builderMock.Verify(e => e.Overwrite(nameof(TestClass.EnumerableProperty), It.Is<IEnumerable<int>>(en => ReferenceEquals(en, collectionMock.Object))), Times.Once);
-                foreach (var expectedValue in additionalElements)
-                    collectionMock.Verify(e => e.Add(expectedValue), Times.Once);
             }
 
             public class TestClass

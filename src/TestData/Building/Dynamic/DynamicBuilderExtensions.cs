@@ -75,6 +75,18 @@ namespace TestData.Building.Dynamic
             return WithValue(builder, enumerableProperty, elements);
         }
 
+        public static IDynamicBuilder<T> WithBuilderDependentMany<T, TElement>(this IDynamicBuilder<T> builder, Expression<Func<T, IEnumerable<TElement>>> enumerableProperty, int count, Func<IDynamicBuilder<T>, int, TElement> elementFactory)
+        {
+            if (elementFactory == null) throw new ArgumentNullException(nameof(elementFactory));
+            return WithMany(builder, enumerableProperty, count, idx => elementFactory(builder, idx));
+        }
+
+        public static IDynamicBuilder<T> WithDependentMany<T, TElement>(this IDynamicBuilder<T> builder, Expression<Func<T, IEnumerable<TElement>>> enumerableProperty, int count, Func<T, int, TElement> elementFactory)
+        {
+            if (elementFactory == null) throw new ArgumentNullException(nameof(elementFactory));
+            return WithMany(builder, enumerableProperty, count, idx => elementFactory(builder.Build(), idx));
+        }
+
         public static IDynamicBuilder<TParent> WithChild<TParent, TChild>(
             this IDynamicBuilder<TParent> builder,
             Expression<Func<TParent, TChild>> childProperty,

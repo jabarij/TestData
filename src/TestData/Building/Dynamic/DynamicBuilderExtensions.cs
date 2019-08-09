@@ -174,6 +174,14 @@ namespace TestData.Building.Dynamic
             return WithBuilderDependentValue(builder, property, b => getValue(b.Build()));
         }
 
+        public static IDynamicBuilder<T> WithTransformedValue<T, TProperty>(this IDynamicBuilder<T> builder, Expression<Func<T, TProperty>> property, Func<TProperty, TProperty> transformation)
+        {
+            if (transformation == null) throw new ArgumentNullException(nameof(transformation));
+            var value = builder.GetOverwrittenValue(property);
+            var transformedValue = transformation(value);
+            return WithValue(builder, property, transformedValue);
+        }
+
         public static TProperty GetOverwrittenValue<T, TProperty>(this IDynamicBuilder<T> builder, Expression<Func<T, TProperty>> property)
         {
             if (builder == null) throw new ArgumentNullException(nameof(builder));

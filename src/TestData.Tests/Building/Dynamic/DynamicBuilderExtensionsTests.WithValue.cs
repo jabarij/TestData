@@ -63,10 +63,27 @@ namespace TestData.Building.Dynamic
                 builderMock.Verify(e => e.Overwrite(nameof(TestClass.Int32Property), expectedValue), Times.Once);
             }
 
+            [Fact]
+            public void ExpressionIsNonSettableProperty_ShouldOverwritePropertyByExpression()
+            {
+                // arrange
+                var builderMock = new Mock<IDynamicBuilder<TestClass>>();
+                int expectedValue = 1;
+
+                // act
+                var builder = DynamicBuilderExtensions.WithValue(builderMock.Object, e => e.DayProperty, expectedValue);
+
+                // assert
+                builderMock.Verify(e => e.Overwrite(nameof(TestClass.DayProperty), expectedValue), Times.Once);
+            }
+
             public class TestClass
             {
                 public int Int32Property { get; set; }
                 public int Int32Function() => default(int);
+
+                public DateTime Date { get; set; }
+                public int DayProperty => Date.Day;
             }
         }
     }

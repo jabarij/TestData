@@ -10,36 +10,27 @@ namespace TestData.Building.Dynamic
 {
     public sealed class DynamicBuilder<T> : Builder<T>, IDynamicBuilder<T>
     {
-        private static readonly IReadOnlyCollection<PropertyInfo> Properties =
-            new ReadOnlyCollection<PropertyInfo>(
-                (from property in typeof(T).GetProperties(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
-                 let getMethod = property.GetGetMethod(true)
-                 where
-                    getMethod.IsPublic
-                    || getMethod.IsAssembly
-                    || getMethod.IsFamilyOrAssembly
-                 select property).ToList());
-
+        private readonly IReadOnlyCollection<PropertyInfo> _properties;
         private readonly HashSet<INamedPropertyOverwriter> _propertyOverwriters =
             new HashSet<INamedPropertyOverwriter>(
                 new DelegatedEqualityComparer<INamedPropertyOverwriter>(
                     (a, b) => string.Equals(a.PropertyName, b.PropertyName, StringComparison.Ordinal),
                     obj => obj.PropertyName.GetHashCode()));
 
-        public DynamicBuilder() : this(CreateDefaultInstanceFactory(), CreateDefaultPropertySetter()) { }
-        public DynamicBuilder(IInstanceFactory<T> instanceFactory) : this(instanceFactory, CreateDefaultPropertySetter()) { }
-        public DynamicBuilder(IPropertySetter propertySetter) : this(CreateDefaultInstanceFactory(), propertySetter) { }
-        public DynamicBuilder(IInstanceFactory<T> instanceFactory, IPropertySetter propertySetter)
+        public DynamicBuilder(
+            IInstanceFactory<T> instanceFactory = null,
+            IPropertySetter propertySetter = null,
+            IMemberSelector memberSelector = null)
         {
-            InstanceFactory = instanceFactory ?? throw new ArgumentNullException(nameof(instanceFactory));
-            PropertySetter = propertySetter ?? throw new ArgumentNullException(nameof(propertySetter));
+            InstanceFactory = instanceFactory ?? new ConstructorInstanceFactory<T>();
+            PropertySetter = propertySetter ?? new PropertySetter();
+            MemberSelector = memberSelector ?? new MemberSelector();
+            _properties = new ReadOnlyCollection<PropertyInfo>(MemberSelector.SelectProperties(typeof(T)).ToList());
         }
-
-        public static IInstanceFactory<T> CreateDefaultInstanceFactory() => new ConstructorInstanceFactory<T>();
-        public static IPropertySetter CreateDefaultPropertySetter() => new PropertySetter();
 
         public IInstanceFactory<T> InstanceFactory { get; }
         public IPropertySetter PropertySetter { get; }
+        public IMemberSelector MemberSelector { get; }
 
         public void Overwrite(string name, object value)
         {
@@ -51,14 +42,66 @@ namespace TestData.Building.Dynamic
         {
             Assert.IsNotNull(template, nameof(template));
 
-            var readableProperties = Properties.Where(e => e.CanRead);
-            foreach (var property in readableProperties)
+            if (template is T)
             {
-                var overwriter = new PropertyInfoOverwriter(property);
-                overwriter.SetValueFromPropertyOwner(template);
-                Overwrite(overwriter);
+                var propertyOverwriters = _properties
+                    .Where(e => e.CanRead)
+                    .Select(e => new PropertyInfoOverwriter(e));
+                foreach (var overwriter in propertyOverwriters)
+                {
+                    overwriter.SetValueFromPropertyOwner(template);
+                    Overwrite(overwriter);
+                }
+            }
+            else
+            {
+                var theirProperties = MemberSelector.SelectProperties(template.GetType()).Where(e => e.CanRead).ToList();
+                var propertyMatches = _properties
+                    .GroupJoin(
+                        inner: theirProperties,
+                        outerKeySelector: ourP => ourP,
+                        innerKeySelector: theirP => theirP,
+                        resultSelector: (ourP, theirP) => new { OurProperty = ourP, TheirProperties = theirP },
+                        comparer: new DelegatedEqualityComparer<PropertyInfo>(MatchProperties, p => p.Name.ToLower().GetHashCode()));
+                var entries =
+                    from match in propertyMatches
+                    let propertiesComparer = new DelegatedComparer<PropertyInfo>(CompareProperties(match.OurProperty))
+                    select new
+                    {
+                        Overwriter = new PropertyInfoOverwriter(match.OurProperty),
+                        TheirProperty = match.TheirProperties
+                            .OrderBy(p => p, propertiesComparer)
+                            .FirstOrDefault()
+                    };
+                foreach (var entry in entries)
+                {
+                    if (entry.TheirProperty == null)
+                        continue;
+                    var overwriter = entry.Overwriter;
+                    overwriter.SetValue(entry.TheirProperty.GetValue(template));
+                    Overwrite(overwriter);
+                }
             }
         }
+        private bool MatchProperties(PropertyInfo source, PropertyInfo target) =>
+            string.Equals(source.Name, target.Name, StringComparison.OrdinalIgnoreCase)
+            && target.PropertyType.IsAssignableFrom(source.PropertyType);
+        private Func<PropertyInfo, PropertyInfo, int> CompareProperties(PropertyInfo sourceProperty) =>
+            ((p1, p2) =>
+            {
+                if (string.Equals(p1.Name, p2.Name, StringComparison.Ordinal))
+                    return 0;
+                if (string.Equals(sourceProperty.Name, p1.Name, StringComparison.Ordinal))
+                    return 1;
+                if (string.Equals(sourceProperty.Name, p2.Name, StringComparison.Ordinal))
+                    return -1;
+                if (string.Equals(sourceProperty.Name, p1.Name, StringComparison.OrdinalIgnoreCase))
+                    return 1;
+                if (string.Equals(sourceProperty.Name, p2.Name, StringComparison.OrdinalIgnoreCase))
+                    return -1;
+                return string.CompareOrdinal(p1.Name, p2.Name);
+            });
+
         private void Overwrite(INamedPropertyOverwriter overwriter)
         {
             if (!_propertyOverwriters.TryGetValue(overwriter, out INamedPropertyOverwriter existingOverwriter))
@@ -89,7 +132,7 @@ namespace TestData.Building.Dynamic
             T instance = InstanceFactory.Create(_propertyOverwriters);
 
             var overwrittenProperties =
-                from property in Properties
+                from property in _properties
                 join overwriter in _propertyOverwriters on property.Name equals overwriter.PropertyName
                 select (Property: property, Overwriter: overwriter);
             foreach (var entry in overwrittenProperties)
@@ -98,11 +141,11 @@ namespace TestData.Building.Dynamic
             return instance;
         }
 
-        private static PropertyInfo GetPropertyOrThrow(string name)
+        private PropertyInfo GetPropertyOrThrow(string name)
         {
             var property =
-                Properties.SingleOrDefault(e => string.Equals(e.Name, name, StringComparison.Ordinal))
-                ?? Properties.FirstOrDefault(e => string.Equals(e.Name, name, StringComparison.OrdinalIgnoreCase));
+                _properties.SingleOrDefault(e => string.Equals(e.Name, name, StringComparison.Ordinal))
+                ?? _properties.FirstOrDefault(e => string.Equals(e.Name, name, StringComparison.OrdinalIgnoreCase));
             if (property == null)
                 throw new InvalidOperationException($"Unknown property '{name}' of type {typeof(T).FullName}.");
             return property;

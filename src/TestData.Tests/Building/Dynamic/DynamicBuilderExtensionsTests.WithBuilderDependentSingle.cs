@@ -71,7 +71,7 @@ namespace TestData.Building.Dynamic
                 var builderMock = new Mock<IDynamicBuilder<TestClass>>();
                 int minValue = 1;
                 builderMock.Setup(e => e.IsOverwritten(nameof(TestClass.MinValueProperty))).Returns(true);
-                builderMock.Setup(e => e.GetOverwrittenValue<int>(nameof(TestClass.MinValueProperty))).Returns(minValue);
+                builderMock.Setup(e => e.GetOverwrittenValue(nameof(TestClass.MinValueProperty))).Returns(minValue);
                 int expectedValue = minValue + 1;
 
                 // act

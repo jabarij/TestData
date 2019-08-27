@@ -75,7 +75,7 @@ namespace TestData.Building.Dynamic
                 builderMock.Setup(e => e.Build()).Returns(new TestClass { SomeValueProperty = additionalElement });
                 builderMock.Setup(e => e.IsOverwritten(nameof(TestClass.EnumerableProperty))).Returns(true);
                 builderMock
-                    .Setup(e => e.GetOverwrittenValue<IEnumerable<int>>(nameof(TestClass.EnumerableProperty)))
+                    .Setup(e => e.GetOverwrittenValue(nameof(TestClass.EnumerableProperty)))
                     .Returns((IEnumerable<int>)null);
 
                 // act
@@ -97,7 +97,7 @@ namespace TestData.Building.Dynamic
                 builderMock.Setup(e => e.Build()).Returns(new TestClass { SomeValueProperty = additionalElement });
                 builderMock.Setup(e => e.IsOverwritten(nameof(TestClass.EnumerableProperty))).Returns(true);
                 builderMock
-                    .Setup(e => e.GetOverwrittenValue<IEnumerable<int>>(nameof(TestClass.EnumerableProperty)))
+                    .Setup(e => e.GetOverwrittenValue(nameof(TestClass.EnumerableProperty)))
                     .Returns(originalElements);
 
                 // act

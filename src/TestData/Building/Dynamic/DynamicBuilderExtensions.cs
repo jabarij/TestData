@@ -7,6 +7,21 @@ namespace TestData.Building.Dynamic
 {
     public static class DynamicBuilderExtensions
     {
+        public static IDynamicBuilder<T> Overwrite<T, TProperty>(this IDynamicBuilder<T> builder, string name, TProperty value)
+        {
+            builder.Overwrite(name, value);
+            return builder;
+        }
+
+        public static IDynamicBuilder Overwrite<TProperty>(this IDynamicBuilder builder, string name, TProperty value)
+        {
+            builder.Overwrite(name, value);
+            return builder;
+        }
+
+        public static TProperty GetOverwrittenValue<TProperty>(this IDynamicBuilder builder, string name) =>
+            (TProperty)builder.GetOverwrittenValue(name);
+
         public static IDynamicBuilder<T> WithNull<T, TProperty>(this IDynamicBuilder<T> builder, Expression<Func<T, TProperty>> property) where TProperty : class =>
             WithValue(builder, property, null);
 

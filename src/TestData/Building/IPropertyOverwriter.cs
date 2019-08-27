@@ -4,8 +4,4 @@
     {
         bool IsOverwritten { get; }
     }
-
-    public interface IPropertyOverwriter<T> : IPropertyOverwriter, IValueSetter<T>, IValueGetter<T>
-    {
-    }
 }

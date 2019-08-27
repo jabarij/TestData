@@ -74,7 +74,7 @@ namespace TestData.Building.Dynamic
                 int parentValue = 1;
                 builderMock.Setup(e => e.Build()).Returns(new TestClassParent { ParentValueProperty = parentValue });
                 builderMock.Setup(e => e.IsOverwritten(nameof(TestClassParent.Child))).Returns(true);
-                builderMock.Setup(e => e.GetOverwrittenValue<TestClassChild>(nameof(TestClassParent.Child))).Returns(child);
+                builderMock.Setup(e => e.GetOverwrittenValue(nameof(TestClassParent.Child))).Returns(child);
                 int expectedChildValue = parentValue + 1;
 
                 // act

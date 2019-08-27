@@ -73,7 +73,7 @@ namespace TestData.Building.Dynamic
                     .Setup(e => e.IsOverwritten(nameof(TestClass.Int32Property)))
                     .Returns(true);
                 builderMock
-                    .Setup(e => e.GetOverwrittenValue<int>(nameof(TestClass.Int32Property)))
+                    .Setup(e => e.GetOverwrittenValue(nameof(TestClass.Int32Property)))
                     .Returns(originalValue);
 
                 // act

@@ -73,10 +73,10 @@ namespace TestData.Building.Dynamic
                 var expectedElements = new List<int> { additionalElement }.Concat(additionalElements);
                 var builderMock = new Mock<IDynamicBuilder<TestClass>>();
                 builderMock.Setup(e => e.IsOverwritten(nameof(TestClass.SomeValueProperty))).Returns(true);
-                builderMock.Setup(e => e.GetOverwrittenValue<int>(nameof(TestClass.SomeValueProperty))).Returns(additionalElement);
+                builderMock.Setup(e => e.GetOverwrittenValue(nameof(TestClass.SomeValueProperty))).Returns(additionalElement);
                 builderMock.Setup(e => e.IsOverwritten(nameof(TestClass.EnumerableProperty))).Returns(true);
                 builderMock
-                    .Setup(e => e.GetOverwrittenValue<IEnumerable<int>>(nameof(TestClass.EnumerableProperty)))
+                    .Setup(e => e.GetOverwrittenValue(nameof(TestClass.EnumerableProperty)))
                     .Returns((IEnumerable<int>)null);
 
                 // act
@@ -96,10 +96,10 @@ namespace TestData.Building.Dynamic
                 var expectedElements = originalElements.Concat(new List<int> { additionalElement }).Concat(additionalElements);
                 var builderMock = new Mock<IDynamicBuilder<TestClass>>();
                 builderMock.Setup(e => e.IsOverwritten(nameof(TestClass.SomeValueProperty))).Returns(true);
-                builderMock.Setup(e => e.GetOverwrittenValue<int>(nameof(TestClass.SomeValueProperty))).Returns(additionalElement);
+                builderMock.Setup(e => e.GetOverwrittenValue(nameof(TestClass.SomeValueProperty))).Returns(additionalElement);
                 builderMock.Setup(e => e.IsOverwritten(nameof(TestClass.EnumerableProperty))).Returns(true);
                 builderMock
-                    .Setup(e => e.GetOverwrittenValue<IEnumerable<int>>(nameof(TestClass.EnumerableProperty)))
+                    .Setup(e => e.GetOverwrittenValue(nameof(TestClass.EnumerableProperty)))
                     .Returns(originalElements);
 
                 // act

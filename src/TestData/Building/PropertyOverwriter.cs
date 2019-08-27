@@ -2,14 +2,13 @@
 
 namespace TestData.Building
 {
-    public class PropertyOverwriter : IPropertyOverwriter
+    public class PropertyOverwriter : ITypedPropertyOverwriter
     {
-        private readonly Type _propertyType;
         private readonly object _originalValue;
 
         public PropertyOverwriter(Type propertyType, object originalValue = null)
         {
-            _propertyType = Assert.IsNotNull(propertyType, nameof(propertyType));
+            PropertyType = Assert.IsNotNull(propertyType, nameof(propertyType));
 
             if (!ReferenceEquals(originalValue, null))
                 Assert.IsOfType(originalValue, propertyType, nameof(originalValue));
@@ -19,10 +18,7 @@ namespace TestData.Building
             _value = originalValue;
         }
 
-        private object NullCheck(Type type, object value) =>
-            type.IsValueType && ReferenceEquals(value, null)
-            ? Activator.CreateInstance(type)
-            : value;
+        public Type PropertyType { get; }
 
         public bool IsOverwritten { get; private set; }
         public void Restore()
@@ -36,5 +32,10 @@ namespace TestData.Building
 
         public object GetValue() => Value;
         public void SetValue(object value) => Value = value;
+
+        private object NullCheck(Type type, object value) =>
+            type.IsValueType && ReferenceEquals(value, null)
+            ? Activator.CreateInstance(type)
+            : value;
     }
 }

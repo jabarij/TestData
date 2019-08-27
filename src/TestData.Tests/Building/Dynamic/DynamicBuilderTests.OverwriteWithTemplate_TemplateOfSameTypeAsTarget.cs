@@ -9,7 +9,7 @@ namespace TestData.Building.Dynamic
 {
     partial class DynamicBuilderTests
     {
-        public class OverwriteAll_SameTypeTemplate : DynamicBuilderTests
+        public class OverwriteWithTemplate_TemplateOfSameTypeAsTarget : DynamicBuilderTests
         {
             [Fact]
             public void NullTemplate_ShouldThrow()
@@ -18,7 +18,7 @@ namespace TestData.Building.Dynamic
                 var sut = new DynamicBuilder<TestClass>();
 
                 // act
-                Action overwriteAll = () => sut.OverwriteAll(null);
+                Action overwriteAll = () => sut.OverwriteWithTemplate(null);
 
                 // assert
                 overwriteAll.Should().Throw<ArgumentNullException>();
@@ -51,7 +51,7 @@ namespace TestData.Building.Dynamic
                 .Select(propName => template.GetType().GetProperty(propName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic));
 
                 // act
-                sut.OverwriteAll(template);
+                sut.OverwriteWithTemplate(template);
                 sut.Build();
 
                 // assert

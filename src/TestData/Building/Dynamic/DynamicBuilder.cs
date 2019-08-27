@@ -38,7 +38,21 @@ namespace TestData.Building.Dynamic
             var property = GetPropertyOrThrow(name);
             Overwrite(new PropertyInfoOverwriter(property, value));
         }
-        public void OverwriteAll(object template)
+        public void OverwriteWithDelegate(Action<OverwritingContext> overwrite)
+        {
+            Assert.IsNotNull(overwrite, nameof(overwrite));
+
+            var overwritingContexts = _properties
+                .Where(e => e.CanRead)
+                .Select(e => new OverwritingContext(e.Name, e.PropertyType));
+            foreach (var overwritingContext in overwritingContexts)
+            {
+                overwrite(overwritingContext);
+                if (overwritingContext.IsOverwritten)
+                    Overwrite(overwritingContext);
+            }
+        }
+        public void OverwriteWithTemplate(object template)
         {
             Assert.IsNotNull(template, nameof(template));
 

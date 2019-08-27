@@ -41,19 +41,21 @@ namespace TestData.Building.Dynamic
         public IInstanceFactory<T> InstanceFactory { get; }
         public IPropertySetter PropertySetter { get; }
 
-        public void Overwrite<TProperty>(string name, TProperty value)
+        public void Overwrite(string name, object value)
         {
+            Assert.IsNotNullOrWhiteSpace(name, nameof(name));
             var property = GetPropertyOrThrow(name);
-            Overwrite(new NamedPropertyOverwriter<TProperty>(property.Name, value));
+            Overwrite(new PropertyInfoOverwriter(property, value));
         }
-        public void OverwriteAll(T template)
+        public void OverwriteAll(object template)
         {
-            if (template == null) throw new ArgumentNullException(nameof(template));
+            Assert.IsNotNull(template, nameof(template));
+
             var readableProperties = Properties.Where(e => e.CanRead);
             foreach (var property in readableProperties)
             {
-                var overwriter = NamedPropertyOverwriter.Create(property);
-                overwriter.SetValue(property.GetValue(template));
+                var overwriter = new PropertyInfoOverwriter(property);
+                overwriter.SetValueFromPropertyOwner(template);
                 Overwrite(overwriter);
             }
         }
@@ -66,16 +68,19 @@ namespace TestData.Building.Dynamic
         }
         public bool IsOverwritten(string name)
         {
+            Assert.IsNotNullOrWhiteSpace(name, nameof(name));
+
             var property = GetPropertyOrThrow(name);
             return _propertyOverwriters.Any(e => string.Equals(e.PropertyName, property.Name, StringComparison.Ordinal));
         }
-        public TProperty GetOverwrittenValue<TProperty>(string name)
+        public object GetOverwrittenValue(string name)
         {
+            Assert.IsNotNullOrWhiteSpace(name, nameof(name));
             var property = GetPropertyOrThrow(name);
-            var overwriter = new NamedPropertyOverwriter<TProperty>(property.Name);
+            var overwriter = new PropertyInfoOverwriter(property);
             return
                 _propertyOverwriters.TryGetValue(overwriter, out INamedPropertyOverwriter existingOverwriter)
-                ? (TProperty)existingOverwriter.GetValue()
+                ? existingOverwriter.GetValue()
                 : overwriter.Value;
         }
 
@@ -95,7 +100,6 @@ namespace TestData.Building.Dynamic
 
         private static PropertyInfo GetPropertyOrThrow(string name)
         {
-            if (string.IsNullOrWhiteSpace(name)) throw new ArgumentNullException(nameof(name));
             var property =
                 Properties.SingleOrDefault(e => string.Equals(e.Name, name, StringComparison.Ordinal))
                 ?? Properties.FirstOrDefault(e => string.Equals(e.Name, name, StringComparison.OrdinalIgnoreCase));

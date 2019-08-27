@@ -34,6 +34,6 @@ namespace TestData.Building.Standard
         protected virtual IPropertyOverwriter GetParameterOverwriter(ParameterInfo parameter, IEnumerable<INamedPropertyOverwriter> overwriters) =>
             overwriters.SingleOrDefault(e => string.Equals(e.PropertyName, parameter.Name, StringComparison.Ordinal))
             ?? overwriters.FirstOrDefault(e => string.Equals(e.PropertyName, parameter.Name, StringComparison.OrdinalIgnoreCase))
-            ?? PropertyOverwriter.Create(parameter.ParameterType);
+            ?? (IPropertyOverwriter)new PropertyOverwriter(parameter.ParameterType);
     }
 }

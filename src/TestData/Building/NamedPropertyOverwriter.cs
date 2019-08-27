@@ -1,26 +1,21 @@
 ﻿using System;
-using System.Reflection;
 
 namespace TestData.Building
 {
-    internal class NamedPropertyOverwriter<T> : PropertyOverwriter<T>, INamedPropertyOverwriter
+    public class NamedPropertyOverwriter : PropertyOverwriter, INamedPropertyOverwriter
     {
-        public NamedPropertyOverwriter(string propertyName) : this(propertyName, default(T)) { }
-        public NamedPropertyOverwriter(string propertyName, T originalValue)
-            : base(originalValue)
+        public NamedPropertyOverwriter(string propertyName, Type propertyType, object originalValue = null)
+            : base(propertyType, originalValue)
         {
-            if (string.IsNullOrWhiteSpace(propertyName)) throw new ArgumentNullException(nameof(propertyName));
-            PropertyName = propertyName;
+            PropertyName = Assert.IsNotNullOrWhiteSpace(propertyName, nameof(propertyName));
         }
 
         public string PropertyName { get; }
     }
 
-    internal static class NamedPropertyOverwriter
+    public class NamedPropertyOverwriter<T> : NamedPropertyOverwriter
     {
-        public static INamedPropertyOverwriter Create(PropertyInfo property) =>
-            (INamedPropertyOverwriter)Activator.CreateInstance(typeof(NamedPropertyOverwriter<>).MakeGenericType(property.PropertyType), property.Name);
-        public static INamedPropertyOverwriter Create(Type type, string propertyName) =>
-            (INamedPropertyOverwriter)Activator.CreateInstance(typeof(NamedPropertyOverwriter<>).MakeGenericType(type), propertyName);
+        public NamedPropertyOverwriter(string propertyName, T originalValue = default(T))
+            : base(propertyName, typeof(T), originalValue) { }
     }
 }

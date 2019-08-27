@@ -88,7 +88,7 @@ namespace TestData.Building.Dynamic
                 var builderMock = new Mock<IDynamicBuilder<TestClass>>();
                 string prefix = "element";
                 builderMock.Setup(e => e.IsOverwritten(nameof(TestClass.Prefix))).Returns(true);
-                builderMock.Setup(e => e.GetOverwrittenValue<string>(nameof(TestClass.Prefix))).Returns(prefix);
+                builderMock.Setup(e => e.GetOverwrittenValue(nameof(TestClass.Prefix))).Returns(prefix);
 
                 // act
                 var builder = DynamicBuilderExtensions.WithBuilderDependentMany(builderMock.Object, e => e.EnumerableProperty, 2, (objBuilder, idx) => objBuilder.GetOverwrittenValue(e => e.Prefix) + idx.ToString());

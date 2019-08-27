@@ -2,7 +2,7 @@
 
 namespace TestData.Building
 {
-    public class PropertyOverwriter<T> : IPropertyOverwriter<T>
+    internal class PropertyOverwriter<T> : IPropertyOverwriter<T>
     {
         private readonly T _originalValue;
 
@@ -29,7 +29,7 @@ namespace TestData.Building
 
     }
 
-    public class PropertyOverwriter
+    internal class PropertyOverwriter
     {
         public static IPropertyOverwriter Create(Type type) =>
             (IPropertyOverwriter)Activator.CreateInstance(typeof(PropertyOverwriter<>).MakeGenericType(type), true);

@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace TestData.Building
 {
-    public class NamedPropertyOverwriter<T> : PropertyOverwriter<T>, INamedPropertyOverwriter
+    internal class NamedPropertyOverwriter<T> : PropertyOverwriter<T>, INamedPropertyOverwriter
     {
         public NamedPropertyOverwriter(string propertyName) : this(propertyName, default(T)) { }
         public NamedPropertyOverwriter(string propertyName, T originalValue)
@@ -16,7 +16,7 @@ namespace TestData.Building
         public string PropertyName { get; }
     }
 
-    public static class NamedPropertyOverwriter
+    internal static class NamedPropertyOverwriter
     {
         public static INamedPropertyOverwriter Create(PropertyInfo property) =>
             (INamedPropertyOverwriter)Activator.CreateInstance(typeof(NamedPropertyOverwriter<>).MakeGenericType(property.PropertyType), property.Name);

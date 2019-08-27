@@ -9,7 +9,7 @@ namespace TestData.Building.Dynamic
 {
     partial class DynamicBuilderTests
     {
-        public class OverwriteAll_DifferentTypeTemplate : DynamicBuilderTests
+        public class OverwriteWithDelegate_TemplatingAction : DynamicBuilderTests
         {
             [Fact]
             public void NullTemplate_ShouldThrow()
@@ -18,7 +18,7 @@ namespace TestData.Building.Dynamic
                 var sut = new DynamicBuilder<TestClass>();
 
                 // act
-                Action overwriteAll = () => sut.OverwriteAll(null);
+                Action overwriteAll = () => sut.OverwriteWithDelegate(null);
 
                 // assert
                 overwriteAll.Should().Throw<ArgumentNullException>();
@@ -33,7 +33,6 @@ namespace TestData.Building.Dynamic
                     propertySetter: propertySetterMock.Object);
 
                 int expectedValue = 1;
-                var template = new TestClassTemplate(expectedValue);
                 var expectedProperties = new[]
                 {
                     nameof(TestClass.PublicGetPublicSet),
@@ -51,37 +50,11 @@ namespace TestData.Building.Dynamic
                 .Select(propName => typeof(TestClass).GetProperty(propName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic));
 
                 // act
-                sut.OverwriteAll(template);
-                sut.Build();
-
-                // assert
-                foreach (var expectedProperty in expectedProperties)
-                    propertySetterMock.Verify(e => e.SetProperty(It.IsAny<object>(), expectedProperty, expectedValue), Times.Once());
-                propertySetterMock.Verify(e => e.SetProperty(It.IsAny<object>(), It.IsAny<PropertyInfo>(), It.IsAny<object>()), Times.Exactly(expectedProperties.Count()));
-            }
-
-            [Fact]
-            public void ShouldCallRightPropertySetterForAmbiguousProperties()
-            {
-                // arrange
-                var propertySetterMock = new Mock<IPropertySetter>();
-                var sut = new DynamicBuilder<SmallTestClass>(
-                    propertySetter: propertySetterMock.Object);
-
-                int expectedValue = 1;
-                var template = new SmallTestClassTemplate
+                sut.OverwriteWithDelegate(ctx =>
                 {
-                    someProperty = expectedValue,
-                    someproperty = expectedValue + 1
-                };
-                var expectedProperties = new[]
-                {
-                    nameof(SmallTestClass.SomeProperty)
-                }
-                .Select(propName => typeof(SmallTestClass).GetProperty(propName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic));
-
-                // act
-                sut.OverwriteAll(template);
+                    if (ctx.PropertyType == typeof(int))
+                        ctx.SetValue(expectedValue);
+                });
                 sut.Build();
 
                 // assert
@@ -102,17 +75,13 @@ namespace TestData.Building.Dynamic
                     PublicGetPrivateSet = value;
                     PublicReadOnlyAutoProperty = value;
                     _publicGetOfPrivateField = value;
-
                     InternalGetInternalSet = value;
                     InternalGetPrivateSet = value;
-
                     ProtectedInternalGetProtectedInternalSet = value;
                     ProtectedInternalGetInternalSet = value;
                     ProtectedInternalGetPrivateSet = value;
-
                     ProtectedGetProtectedSet = value;
                     ProtectedGetPrivateSet = value;
-
                     PrivateGetPrivateSet = value;
                 }
 
@@ -123,76 +92,14 @@ namespace TestData.Building.Dynamic
                 public int PublicReadOnlyAutoProperty { get; }
                 private readonly int _publicGetOfPrivateField;
                 public int PublicGetOfPrivateField => _publicGetOfPrivateField;
-
                 internal int InternalGetInternalSet { get; set; }
                 internal int InternalGetPrivateSet { get; private set; }
-
                 protected internal int ProtectedInternalGetProtectedInternalSet { get; set; }
                 protected internal int ProtectedInternalGetInternalSet { get; internal set; }
                 protected internal int ProtectedInternalGetPrivateSet { get; private set; }
-
                 protected int ProtectedGetProtectedSet { get; set; }
                 protected int ProtectedGetPrivateSet { get; private set; }
-
                 private int PrivateGetPrivateSet { get; set; }
-            }
-
-            public class TestClassTemplate
-            {
-                public TestClassTemplate() { }
-                public TestClassTemplate(
-                    int value)
-                {
-                    PublicGetPublicSet = value;
-                    PublicGetInternalSet = value;
-                    PublicGetProtectedSet = value;
-                    PublicGetPrivateSet = value;
-                    PublicReadOnlyAutoProperty = value;
-                    _publicGetOfPrivateField = value;
-
-                    InternalGetInternalSet = value;
-                    InternalGetPrivateSet = value;
-
-                    ProtectedInternalGetProtectedInternalSet = value;
-                    ProtectedInternalGetInternalSet = value;
-                    ProtectedInternalGetPrivateSet = value;
-
-                    ProtectedGetProtectedSet = value;
-                    ProtectedGetPrivateSet = value;
-
-                    PrivateGetPrivateSet = value;
-                }
-
-                public int PublicGetPublicSet { get; set; }
-                public int PublicGetInternalSet { get; internal set; }
-                public int PublicGetProtectedSet { get; protected set; }
-                public int PublicGetPrivateSet { get; private set; }
-                public int PublicReadOnlyAutoProperty { get; }
-                private readonly int _publicGetOfPrivateField;
-                public int PublicGetOfPrivateField => _publicGetOfPrivateField;
-
-                internal int InternalGetInternalSet { get; set; }
-                internal int InternalGetPrivateSet { get; private set; }
-
-                protected internal int ProtectedInternalGetProtectedInternalSet { get; set; }
-                protected internal int ProtectedInternalGetInternalSet { get; internal set; }
-                protected internal int ProtectedInternalGetPrivateSet { get; private set; }
-
-                protected int ProtectedGetProtectedSet { get; set; }
-                protected int ProtectedGetPrivateSet { get; private set; }
-
-                private int PrivateGetPrivateSet { get; set; }
-            }
-
-            class SmallTestClass
-            {
-                public int SomeProperty { get; set; }
-            }
-
-            class SmallTestClassTemplate
-            {
-                public int someProperty { get; set; }
-                public int someproperty { get; set; }
             }
         }
     }

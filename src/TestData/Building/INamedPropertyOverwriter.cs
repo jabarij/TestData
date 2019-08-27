@@ -1,4 +1,6 @@
-﻿namespace TestData.Building
+﻿using System;
+
+namespace TestData.Building
 {
     public interface INamedPropertyOverwriter : IPropertyOverwriter
     {

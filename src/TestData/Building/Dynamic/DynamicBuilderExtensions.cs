@@ -201,10 +201,15 @@ namespace TestData.Building.Dynamic
         {
             if (builder == null) throw new ArgumentNullException(nameof(builder));
             if (property == null) throw new ArgumentNullException(nameof(property));
-            if (property.Body.NodeType != ExpressionType.MemberAccess)
+
+            var body = property.Body;
+            while (body.NodeType == ExpressionType.Convert)
+                body = ((UnaryExpression)body).Operand;
+
+            if (body.NodeType != ExpressionType.MemberAccess)
                 Error.Raise(new ArgumentException("Only member access expressions are allowed.", nameof(property)),
                     Errors.OnlyMemberAccessExpressionAreAllowed);
-            string name = ((MemberExpression)property.Body).Member.Name;
+            string name = ((MemberExpression)body).Member.Name;
             return
                 builder.IsOverwritten(name)
                 ? builder.GetOverwrittenValue<TProperty>(name)

@@ -83,24 +83,6 @@ namespace TestData.Building.Dynamic
                 }
             }
         }
-        private bool MatchProperties(PropertyInfo source, PropertyInfo target) =>
-            string.Equals(source.Name, target.Name, StringComparison.OrdinalIgnoreCase)
-            && target.PropertyType.IsAssignableFrom(source.PropertyType);
-        private Func<PropertyInfo, PropertyInfo, int> CompareProperties(PropertyInfo sourceProperty) =>
-            ((p1, p2) =>
-            {
-                if (string.Equals(p1.Name, p2.Name, StringComparison.Ordinal))
-                    return 0;
-                if (string.Equals(sourceProperty.Name, p1.Name, StringComparison.Ordinal))
-                    return 1;
-                if (string.Equals(sourceProperty.Name, p2.Name, StringComparison.Ordinal))
-                    return -1;
-                if (string.Equals(sourceProperty.Name, p1.Name, StringComparison.OrdinalIgnoreCase))
-                    return 1;
-                if (string.Equals(sourceProperty.Name, p2.Name, StringComparison.OrdinalIgnoreCase))
-                    return -1;
-                return string.CompareOrdinal(p1.Name, p2.Name);
-            });
 
         private void Overwrite(INamedPropertyOverwriter overwriter)
         {
@@ -150,5 +132,23 @@ namespace TestData.Building.Dynamic
                 throw new InvalidOperationException($"Unknown property '{name}' of type {typeof(T).FullName}.");
             return property;
         }
+        private bool MatchProperties(PropertyInfo source, PropertyInfo target) =>
+            string.Equals(source.Name, target.Name, StringComparison.OrdinalIgnoreCase)
+            && target.PropertyType.IsAssignableFrom(source.PropertyType);
+        private Func<PropertyInfo, PropertyInfo, int> CompareProperties(PropertyInfo sourceProperty) =>
+            ((p1, p2) =>
+            {
+                if (string.Equals(p1.Name, p2.Name, StringComparison.Ordinal))
+                    return 0;
+                if (string.Equals(sourceProperty.Name, p1.Name, StringComparison.Ordinal))
+                    return 1;
+                if (string.Equals(sourceProperty.Name, p2.Name, StringComparison.Ordinal))
+                    return -1;
+                if (string.Equals(sourceProperty.Name, p1.Name, StringComparison.OrdinalIgnoreCase))
+                    return 1;
+                if (string.Equals(sourceProperty.Name, p2.Name, StringComparison.OrdinalIgnoreCase))
+                    return -1;
+                return string.CompareOrdinal(p1.Name, p2.Name);
+            });
     }
 }

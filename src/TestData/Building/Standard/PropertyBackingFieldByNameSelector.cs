@@ -7,11 +7,11 @@ namespace TestData.Building.Standard
     {
         public FieldInfo FindBackingField(PropertyInfo property)
         {
-            if (property == null) throw new ArgumentNullException(nameof(property));
+            Assert.IsNotNull(property, nameof(property));
 
             var backingFieldName = GetBackingFieldName(property);
             if (string.IsNullOrWhiteSpace(backingFieldName))
-                throw new InvalidOperationException("Backing field name must not be either null, empty string or consist of white spaces only.");
+                Error.Raise(new InvalidOperationException("Backing field name must not be either null, empty string or consist of white spaces only."), Errors.ObjectIsNullOrWhiteSpace);
             return property
                 .DeclaringType?
                 .GetField(backingFieldName, BindingFlags.Instance | BindingFlags.NonPublic);

@@ -7,7 +7,7 @@ namespace TestData.Building.Standard
     {
         public DelegateConstructorSelector(Func<Type, ConstructorInfo> selectConstructor)
         {
-            _selectConstructor = selectConstructor ?? throw new ArgumentNullException(nameof(selectConstructor));
+            _selectConstructor = Assert.IsNotNull(selectConstructor, nameof(selectConstructor));
         }
 
         private readonly Func<Type, ConstructorInfo> _selectConstructor;

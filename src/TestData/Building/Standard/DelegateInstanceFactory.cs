@@ -9,7 +9,7 @@ namespace TestData.Building.Standard
         public DelegateInstanceFactory(Func<T> create) : this(e => create()) { }
         public DelegateInstanceFactory(Func<IEnumerable<INamedPropertyOverwriter>, T> create)
         {
-            _create = create ?? throw new ArgumentNullException(nameof(create));
+            _create = Assert.IsNotNull(create, nameof(create));
         }
 
         public T Create(IEnumerable<INamedPropertyOverwriter> overwriters) => _create(overwriters);

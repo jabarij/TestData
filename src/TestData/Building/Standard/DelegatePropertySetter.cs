@@ -9,7 +9,7 @@ namespace TestData.Building.Standard
 
         public DelegatePropertySetter(Action<object, PropertyInfo, object> setProperty)
         {
-            _setProperty = setProperty ?? throw new ArgumentNullException(nameof(setProperty));
+            _setProperty = Assert.IsNotNull(setProperty, nameof(setProperty));
         }
 
         public void SetProperty(object owner, PropertyInfo property, object value) => _setProperty(owner, property, value);

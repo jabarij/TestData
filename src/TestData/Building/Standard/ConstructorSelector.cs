@@ -25,7 +25,7 @@ namespace TestData.Building.Standard
                 case ConstructorSelection.MostParameters:
                     return constructorsOrderedByParametersCount.Last();
                 default:
-                    throw new InvalidOperationException($"Enum value {typeof(ConstructorSelection).FullName}.{ConstructorSelection} is not handled.");
+                    throw Error.Format(new InvalidOperationException($"Enum value {typeof(ConstructorSelection).FullName}.{ConstructorSelection} is not handled."), Errors.EnumValueIsNotHandled);
             }
         }
     }

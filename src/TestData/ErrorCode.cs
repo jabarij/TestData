@@ -6,7 +6,7 @@ namespace TestData
     {
         public ErrorCode(string code)
         {
-            if (string.IsNullOrWhiteSpace(code)) throw new ArgumentNullException(nameof(code));
+            Assert.IsNotNullOrWhiteSpace(code, nameof(code));
             Code = code;
         }
 

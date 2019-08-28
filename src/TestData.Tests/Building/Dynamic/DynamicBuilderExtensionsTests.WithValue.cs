@@ -77,6 +77,34 @@ namespace TestData.Building.Dynamic
                 builderMock.Verify(e => e.Overwrite(nameof(TestClass.DayProperty), expectedValue), Times.Once);
             }
 
+            [Fact]
+            public void ExpressionCastsNullableValueToNonNullableProperty_ShouldOverwritePropertyByExpression()
+            {
+                // arrange
+                var builderMock = new Mock<IDynamicBuilder<TestClass>>();
+                int? expectedValue = 1;
+
+                // act
+                var builder = DynamicBuilderExtensions.WithValue(builderMock.Object, e => e.Int32Property, expectedValue);
+
+                // assert
+                builderMock.Verify(e => e.Overwrite(nameof(TestClass.Int32Property), expectedValue), Times.Once);
+            }
+
+            [Fact]
+            public void ExpressionCastsEmptyNullableValueToNonNullableProperty_ShouldOverwritePropertyByExpression()
+            {
+                // arrange
+                var builderMock = new Mock<IDynamicBuilder<TestClass>>();
+                int? expectedValue = null;
+
+                // act
+                var builder = DynamicBuilderExtensions.WithValue(builderMock.Object, e => e.Int32Property, expectedValue);
+
+                // assert
+                builderMock.Verify(e => e.Overwrite(nameof(TestClass.Int32Property), expectedValue), Times.Once);
+            }
+
             public class TestClass
             {
                 public int Int32Property { get; set; }

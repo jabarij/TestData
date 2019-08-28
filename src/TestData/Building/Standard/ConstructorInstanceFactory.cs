@@ -11,7 +11,7 @@ namespace TestData.Building.Standard
         public ConstructorInstanceFactory(ConstructorSelection constructorSelection) : this(new ConstructorSelector<T>(constructorSelection)) { }
         public ConstructorInstanceFactory(IConstructorSelector<T> constructorSelector)
         {
-            ConstructorSelector = constructorSelector ?? throw new ArgumentNullException(nameof(constructorSelector));
+            ConstructorSelector = Assert.IsNotNull(constructorSelector, nameof(constructorSelector));
         }
 
         public IConstructorSelector<T> ConstructorSelector { get; }

@@ -8,7 +8,7 @@ namespace TestData.Building.Standard
         public PropertySetter() : this(new ReadOnlyAutoPropertyBackingFieldSelector()) { }
         public PropertySetter(IPropertyBackingFieldSelector backingFieldSelector)
         {
-            BackingFieldSelector = backingFieldSelector ?? throw new ArgumentNullException(nameof(backingFieldSelector));
+            BackingFieldSelector = Assert.IsNotNull(backingFieldSelector, nameof(backingFieldSelector));
         }
 
         public IPropertyBackingFieldSelector BackingFieldSelector { get; }

@@ -50,7 +50,7 @@ namespace TestData.Building.Dynamic
             }
 
             [Fact]
-            public void ClassProperty_ShouldOverwriteWithNull()
+            public void ClassProperty_ShouldGetOverwrittenValue()
             {
                 // arrange
                 string expectedResult = Guid.NewGuid().ToString();
@@ -70,7 +70,7 @@ namespace TestData.Building.Dynamic
             }
 
             [Fact]
-            public void NullableProperty_ShouldOverwriteWithNull()
+            public void NullableProperty_ShouldGetOverwrittenValue()
             {
                 // arrange
                 int? expectedResult = 1;
@@ -90,7 +90,7 @@ namespace TestData.Building.Dynamic
             }
 
             [Fact]
-            public void StructProperty_ShouldOverwriteGetOverwrittenValueValue()
+            public void StructProperty_ShouldGetOverwrittenValue()
             {
                 // arrange
                 Guid expectedResult = Guid.NewGuid();
@@ -110,20 +110,20 @@ namespace TestData.Building.Dynamic
             }
 
             [Fact]
-            public void NullablePropertyWithCasting_ShouldOverwriteWithNull()
+            public void NonNullablePropertyWithCastingToNullable_ShouldGetOverwrittenValue()
             {
                 // arrange
-                int? expectedResult = 1;
+                Guid expectedResult = Guid.NewGuid();
                 var builderMock = new Mock<IDynamicBuilder<TestClass>>();
                 builderMock
-                    .Setup(e => e.IsOverwritten(nameof(TestClass.NullableInt32Property)))
+                    .Setup(e => e.IsOverwritten(nameof(TestClass.GuidProperty)))
                     .Returns(true);
                 builderMock
-                    .Setup(e => e.GetOverwrittenValue(nameof(TestClass.NullableInt32Property)))
-                    .Returns(1);
+                    .Setup(e => e.GetOverwrittenValue(nameof(TestClass.GuidProperty)))
+                    .Returns(expectedResult);
 
                 // act
-                int? result = DynamicBuilderExtensions.GetOverwrittenValue(builderMock.Object, e => (int)e.NullableInt32Property);
+                var result = DynamicBuilderExtensions.GetOverwrittenValue<TestClass, Guid?>(builderMock.Object, e => e.GuidProperty);
 
                 // assert
                 result.Should().Be(expectedResult);

@@ -9,8 +9,8 @@ namespace TestData.Common.Reflection
     {
         public static T GetFieldValue<T>(this object obj, string fieldName, bool nonPublic = false)
         {
-            if (obj == null) throw new ArgumentNullException(nameof(obj));
-            if (string.IsNullOrWhiteSpace(fieldName)) throw new ArgumentNullException(nameof(fieldName));
+            Assert.IsNotNull(obj, nameof(obj));
+            Assert.IsNotNullOrWhiteSpace(fieldName, nameof(fieldName));
 
             var field = GetField(
                 owner: obj,
@@ -36,8 +36,8 @@ namespace TestData.Common.Reflection
 
         public static T GetPropertyValue<T>(this object obj, string propertyName, bool nonPublic = false)
         {
-            if (obj == null) throw new ArgumentNullException(nameof(obj));
-            if (string.IsNullOrWhiteSpace(propertyName)) throw new ArgumentNullException(nameof(propertyName));
+            Assert.IsNotNull(obj, nameof(obj));
+            Assert.IsNotNullOrWhiteSpace(propertyName, nameof(propertyName));
 
             var property = GetProperty(
                 owner: obj,
@@ -62,8 +62,8 @@ namespace TestData.Common.Reflection
 
         public static T GetMemberValue<T>(this object obj, string memberName, bool nonPublic = false)
         {
-            if (obj == null) throw new ArgumentNullException(nameof(obj));
-            if (string.IsNullOrWhiteSpace(memberName)) throw new ArgumentNullException(nameof(memberName));
+            Assert.IsNotNull(obj, nameof(obj));
+            Assert.IsNotNullOrWhiteSpace(memberName, nameof(memberName));
 
             var property = GetProperty(
                 owner: obj,
@@ -89,8 +89,8 @@ namespace TestData.Common.Reflection
 
         public static T GetFunction<T>(this object obj, string name, bool nonPublic = false)
         {
-            if (obj == null) throw new ArgumentNullException(nameof(obj));
-            if (string.IsNullOrWhiteSpace(name)) throw new ArgumentNullException(nameof(name));
+            Assert.IsNotNull(obj, nameof(obj));
+            Assert.IsNotNullOrWhiteSpace(name, nameof(name));
 
             var function = GetFunction(
                 owner: obj,
@@ -107,7 +107,7 @@ namespace TestData.Common.Reflection
         private static MethodInfo GetFunction(object owner, Type ownerType, Type delegateType, string name, bool nonPublic)
         {
             if (!typeof(Delegate).IsAssignableFrom(delegateType))
-                throw new InvalidCastException($"Expected type {delegateType.FullName} to be a delegate.");
+                Error.Raise(new InvalidCastException($"Expected type {delegateType.FullName} to be a delegate."), Errors.ObjectIsOfUnexpectedType);
 
             var functionBinding = GetMemberBinding(owner != null, nonPublic) | BindingFlags.InvokeMethod;
             var method = ownerType

@@ -12,7 +12,7 @@ namespace TestData.Building.Standard
         public PropertyNameRegexReplaceBackingFieldSelector(string pattern, MatchEvaluator matchEvaluator)
         {
             _regex = new Regex(pattern, RegexOptions.Compiled);
-            _matchEvaluator = matchEvaluator ?? throw new ArgumentNullException(nameof(matchEvaluator));
+            _matchEvaluator = Assert.IsNotNull(matchEvaluator, nameof(matchEvaluator));
         }
 
         protected override string GetBackingFieldName(PropertyInfo property) =>

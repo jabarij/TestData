@@ -39,13 +39,13 @@ namespace TestData.Building.Dynamic
 
         public static IDynamicBuilder<T> WithBuilderDependentSingle<T, TElement>(this IDynamicBuilder<T> builder, Expression<Func<T, IEnumerable<TElement>>> enumerableProperty, Func<IDynamicBuilder<T>, TElement> getElement)
         {
-            if (getElement == null) throw new ArgumentNullException(nameof(getElement));
+            Assert.IsNotNull(getElement, nameof(getElement));
             return WithBuilderDependentValue(builder, enumerableProperty, b => new[] { getElement(b) });
         }
 
         public static IDynamicBuilder<T> WithDependentSingle<T, TElement>(this IDynamicBuilder<T> builder, Expression<Func<T, IEnumerable<TElement>>> enumerableProperty, Func<T, TElement> getElement)
         {
-            if (getElement == null) throw new ArgumentNullException(nameof(getElement));
+            Assert.IsNotNull(getElement, nameof(getElement));
             return WithBuilderDependentSingle(builder, enumerableProperty, b => getElement(b.Build()));
         }
 
@@ -63,8 +63,8 @@ namespace TestData.Building.Dynamic
 
         public static IDynamicBuilder<T> WithBuilderDependentElement<T, TElement>(this IDynamicBuilder<T> builder, Expression<Func<T, IEnumerable<TElement>>> enumerableProperty, Func<IDynamicBuilder<T>, TElement> getElement)
         {
-            if (builder == null) throw new ArgumentNullException(nameof(builder));
-            if (getElement == null) throw new ArgumentNullException(nameof(getElement));
+            Assert.IsNotNull(builder, nameof(builder));
+            Assert.IsNotNull(getElement, nameof(getElement));
             var element = getElement(builder);
             var value = builder.GetOverwrittenValue(enumerableProperty);
             if (value == null)
@@ -76,7 +76,7 @@ namespace TestData.Building.Dynamic
 
         public static IDynamicBuilder<T> WithDependentElement<T, TElement>(this IDynamicBuilder<T> builder, Expression<Func<T, IEnumerable<TElement>>> enumerableProperty, Func<T, TElement> getElement)
         {
-            if (getElement == null) throw new ArgumentNullException(nameof(getElement));
+            Assert.IsNotNull(getElement, nameof(getElement));
             return WithBuilderDependentElement(builder, enumerableProperty, b => getElement(b.Build()));
         }
 
@@ -92,34 +92,34 @@ namespace TestData.Building.Dynamic
 
         public static IDynamicBuilder<T> WithBuilderDependentElements<T, TElement>(this IDynamicBuilder<T> builder, Expression<Func<T, IEnumerable<TElement>>> enumerableProperty, Func<IDynamicBuilder<T>, IEnumerable<TElement>> getElements)
         {
-            if (getElements == null) throw new ArgumentNullException(nameof(getElements));
+            Assert.IsNotNull(getElements, nameof(getElements));
             return WithElements(builder, enumerableProperty, getElements(builder));
         }
 
         public static IDynamicBuilder<T> WithDependentElements<T, TElement>(this IDynamicBuilder<T> builder, Expression<Func<T, IEnumerable<TElement>>> enumerableProperty, Func<T, IEnumerable<TElement>> getElements)
         {
-            if (builder == null) throw new ArgumentNullException(nameof(builder));
-            if (getElements == null) throw new ArgumentNullException(nameof(getElements));
+            Assert.IsNotNull(builder, nameof(builder));
+            Assert.IsNotNull(getElements, nameof(getElements));
             return WithElements(builder, enumerableProperty, getElements(builder.Build()));
         }
 
         public static IDynamicBuilder<T> WithMany<T, TElement>(this IDynamicBuilder<T> builder, Expression<Func<T, IEnumerable<TElement>>> enumerableProperty, int count, Func<int, TElement> elementFactory)
         {
-            if (count < 1) throw new ArgumentOutOfRangeException(nameof(count), count, "Elements count must be greater than zero.");
-            if (elementFactory == null) throw new ArgumentNullException(nameof(elementFactory));
+            Assert.IsGreaterThan(count, 0, nameof(count));
+            Assert.IsNotNull(elementFactory, nameof(elementFactory));
             var elements = Enumerable.Range(0, count).Select(elementFactory);
             return WithValue(builder, enumerableProperty, elements);
         }
 
         public static IDynamicBuilder<T> WithBuilderDependentMany<T, TElement>(this IDynamicBuilder<T> builder, Expression<Func<T, IEnumerable<TElement>>> enumerableProperty, int count, Func<IDynamicBuilder<T>, int, TElement> elementFactory)
         {
-            if (elementFactory == null) throw new ArgumentNullException(nameof(elementFactory));
+            Assert.IsNotNull(elementFactory, nameof(elementFactory));
             return WithMany(builder, enumerableProperty, count, idx => elementFactory(builder, idx));
         }
 
         public static IDynamicBuilder<T> WithDependentMany<T, TElement>(this IDynamicBuilder<T> builder, Expression<Func<T, IEnumerable<TElement>>> enumerableProperty, int count, Func<T, int, TElement> elementFactory)
         {
-            if (elementFactory == null) throw new ArgumentNullException(nameof(elementFactory));
+            Assert.IsNotNull(elementFactory, nameof(elementFactory));
             return WithMany(builder, enumerableProperty, count, idx => elementFactory(builder.Build(), idx));
         }
 
@@ -129,7 +129,7 @@ namespace TestData.Building.Dynamic
             Func<IDynamicBuilder<TChild>, IDynamicBuilder<TChild>> buildChild)
             where TChild : class =>
             WithValue(builder, childProperty,
-                (buildChild ?? throw new ArgumentNullException(nameof(buildChild))).Invoke(
+                Assert.IsNotNull(buildChild, nameof(buildChild)).Invoke(
                     Build.Dynamically(
                         GetOverwrittenValue(builder, childProperty))).Build());
 
@@ -139,7 +139,7 @@ namespace TestData.Building.Dynamic
             Func<IDynamicBuilder<TParent>, IDynamicBuilder<TChild>, IDynamicBuilder<TChild>> buildChild)
             where TChild : class
         {
-            if (buildChild == null) throw new ArgumentNullException(nameof(buildChild));
+            Assert.IsNotNull(buildChild, nameof(buildChild));
             var childBuilder = Build.Dynamically(GetOverwrittenValue(builder, childProperty));
             var child = buildChild(builder, childBuilder).Build();
             return WithValue(builder, childProperty, child);
@@ -151,7 +151,7 @@ namespace TestData.Building.Dynamic
             Func<TParent, IDynamicBuilder<TChild>, IDynamicBuilder<TChild>> buildChild)
             where TChild : class
         {
-            if (buildChild == null) throw new ArgumentNullException(nameof(buildChild));
+            Assert.IsNotNull(buildChild, nameof(buildChild));
             return WithBuilderDependentChild(builder, childProperty, (parentBuilder, childBuilder) => buildChild(parentBuilder.Build(), childBuilder));
         }
 
@@ -160,38 +160,34 @@ namespace TestData.Building.Dynamic
 
         public static IDynamicBuilder<T> WithValue<T, TProperty>(this IDynamicBuilder<T> builder, Expression<Func<T, TProperty>> property, TProperty value)
         {
-            if (builder == null) throw new ArgumentNullException(nameof(builder));
-            if (property == null) throw new ArgumentNullException(nameof(property));
-            if (property.Body.NodeType != ExpressionType.MemberAccess)
-                Error.Raise(new ArgumentException("Only member access expressions are allowed.", nameof(property)),
-                    Errors.OnlyMemberAccessExpressionAreAllowed);
-            string name = ((MemberExpression)property.Body).Member.Name;
+            Assert.IsNotNull(builder, nameof(builder));
+            Assert.IsNotNull(property, nameof(property));
+
+            string name = ExtractMemberAccessor(property).Member.Name;
             builder.Overwrite(name, value);
             return builder;
         }
 
         public static IDynamicBuilder<T> WithBuilderDependentValue<T, TProperty>(this IDynamicBuilder<T> builder, Expression<Func<T, TProperty>> property, Func<IDynamicBuilder<T>, TProperty> getValue)
         {
-            if (builder == null) throw new ArgumentNullException(nameof(builder));
-            if (property == null) throw new ArgumentNullException(nameof(property));
-            if (getValue == null) throw new ArgumentNullException(nameof(getValue));
-            if (property.Body.NodeType != ExpressionType.MemberAccess)
-                Error.Raise(new ArgumentException("Only member access expressions are allowed.", nameof(property)),
-                    Errors.OnlyMemberAccessExpressionAreAllowed);
-            string name = ((MemberExpression)property.Body).Member.Name;
+            Assert.IsNotNull(builder, nameof(builder));
+            Assert.IsNotNull(property, nameof(property));
+            Assert.IsNotNull(getValue, nameof(getValue));
+
+            string name = ExtractMemberAccessor(property).Member.Name;
             builder.Overwrite(name, getValue(builder));
             return builder;
         }
 
         public static IDynamicBuilder<T> WithDependentValue<T, TProperty>(this IDynamicBuilder<T> builder, Expression<Func<T, TProperty>> property, Func<T, TProperty> getValue)
         {
-            if (getValue == null) throw new ArgumentNullException(nameof(getValue));
+            Assert.IsNotNull(getValue, nameof(getValue));
             return WithBuilderDependentValue(builder, property, b => getValue(b.Build()));
         }
 
         public static IDynamicBuilder<T> WithTransformedValue<T, TProperty>(this IDynamicBuilder<T> builder, Expression<Func<T, TProperty>> property, Func<TProperty, TProperty> transformation)
         {
-            if (transformation == null) throw new ArgumentNullException(nameof(transformation));
+            Assert.IsNotNull(transformation, nameof(transformation));
             var value = builder.GetOverwrittenValue(property);
             var transformedValue = transformation(value);
             return WithValue(builder, property, transformedValue);
@@ -199,21 +195,25 @@ namespace TestData.Building.Dynamic
 
         public static TProperty GetOverwrittenValue<T, TProperty>(this IDynamicBuilder<T> builder, Expression<Func<T, TProperty>> property)
         {
-            if (builder == null) throw new ArgumentNullException(nameof(builder));
-            if (property == null) throw new ArgumentNullException(nameof(property));
+            Assert.IsNotNull(builder, nameof(builder));
+            Assert.IsNotNull(property, nameof(property));
 
-            var body = property.Body;
-            while (body.NodeType == ExpressionType.Convert)
-                body = ((UnaryExpression)body).Operand;
-
-            if (body.NodeType != ExpressionType.MemberAccess)
-                Error.Raise(new ArgumentException("Only member access expressions are allowed.", nameof(property)),
-                    Errors.OnlyMemberAccessExpressionAreAllowed);
-            string name = ((MemberExpression)body).Member.Name;
+            string name = ExtractMemberAccessor(property).Member.Name;
             return
                 builder.IsOverwritten(name)
                 ? builder.GetOverwrittenValue<TProperty>(name)
                 : default(TProperty);
+        }
+
+        private static MemberExpression ExtractMemberAccessor<T, TProperty>(Expression<Func<T, TProperty>> property)
+        {
+            var body = property.Body;
+            while (body.NodeType == ExpressionType.Convert)
+                body = ((UnaryExpression)body).Operand;
+            if (body.NodeType != ExpressionType.MemberAccess)
+                Error.Raise(new ArgumentException($"Expected expression to be a member access, but got expression of node type {body.NodeType}.", nameof(property)),
+                    Errors.OnlyMemberAccessExpressionAreAllowed);
+            return (MemberExpression)body;
         }
     }
 }

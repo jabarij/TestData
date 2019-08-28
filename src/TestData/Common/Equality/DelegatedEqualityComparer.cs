@@ -10,7 +10,7 @@ namespace TestData.Common.Equality
 
         public DelegatedEqualityComparer(Func<T, T, bool> equals, Func<T, int> getHashCode = null)
         {
-            _equals = equals ?? throw new ArgumentNullException(nameof(equals));
+            _equals = Assert.IsNotNull(equals, nameof(equals));
             _getHashCode = getHashCode ?? (e => e.GetHashCode());
         }
 

@@ -10,7 +10,7 @@ namespace TestData.Common.Reflection
 
         public BaseTypesChainEnumerable(Type type)
         {
-            _type = type ?? throw new ArgumentException(nameof(type));
+            _type = Assert.IsNotNull(type, nameof(type));
         }
 
         public IEnumerator<Type> GetEnumerator() => new TypeEnumerator(_type, t => t.BaseType);

@@ -9,7 +9,7 @@ namespace TestData.Common.Equality
 
         public DelegatedComparer(Func<T, T, int> compare)
         {
-            _compare = compare ?? throw new ArgumentNullException(nameof(compare));
+            _compare = Assert.IsNotNull(compare, nameof(compare));
         }
 
         public int Compare(T x, T y) =>

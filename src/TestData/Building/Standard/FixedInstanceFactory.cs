@@ -8,7 +8,7 @@ namespace TestData.Building.Standard
     {
         public FixedInstanceFactory(T instance)
         {
-            Instance = instance ?? throw new ArgumentNullException(nameof(instance));
+            Instance = Assert.IsNotNull(instance, nameof(instance));
         }
 
         public T Instance { get; }

@@ -9,7 +9,7 @@ namespace TestData.Building.Standard
 
         public BackingFieldByNameSelector(BackingFieldNameEvaluator getBackingFieldName)
         {
-            _getBackingFieldName = getBackingFieldName ?? throw new ArgumentNullException(nameof(getBackingFieldName));
+            _getBackingFieldName = Assert.IsNotNull(getBackingFieldName, nameof(getBackingFieldName));
         }
 
         protected override string GetBackingFieldName(PropertyInfo property) => _getBackingFieldName(property);

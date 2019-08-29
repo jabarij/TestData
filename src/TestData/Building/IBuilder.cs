@@ -4,6 +4,7 @@
     {
         object Build();
     }
+
     public interface IBuilder<out T> : IBuilder
     {
         new T Build();

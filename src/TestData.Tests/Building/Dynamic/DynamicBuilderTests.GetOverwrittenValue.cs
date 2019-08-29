@@ -18,7 +18,7 @@ namespace TestData.Building.Dynamic
                 var sut = new DynamicBuilder<SomeClass>();
 
                 // act
-                Action getOverwrittenValue = () => sut.GetOverwrittenValue<int>(invalidName);
+                Action getOverwrittenValue = () => sut.GetOverwrittenValue(invalidName);
 
                 // assert
                 getOverwrittenValue.Should().Throw<ArgumentNullException>();
@@ -31,7 +31,7 @@ namespace TestData.Building.Dynamic
                 var sut = new DynamicBuilder<SomeClass>();
 
                 // act
-                Action getOverwrittenValue = () => sut.GetOverwrittenValue<int>("UnknownProperty");
+                Action getOverwrittenValue = () => sut.GetOverwrittenValue("UnknownProperty");
 
                 // assert
                 getOverwrittenValue.Should().Throw<InvalidOperationException>();
@@ -44,7 +44,7 @@ namespace TestData.Building.Dynamic
                 var sut = new DynamicBuilder<SomeClass>();
 
                 // act
-                int result = sut.GetOverwrittenValue<int>(nameof(SomeClass.Int32Property));
+                object result = sut.GetOverwrittenValue(nameof(SomeClass.Int32Property));
 
                 // assert
                 result.Should().Be(default(int));
@@ -59,7 +59,7 @@ namespace TestData.Building.Dynamic
                 sut.Overwrite(nameof(SomeClass.Int32Property), expected);
 
                 // act
-                int result = sut.GetOverwrittenValue<int>(nameof(SomeClass.Int32Property));
+                object result = sut.GetOverwrittenValue(nameof(SomeClass.Int32Property));
 
                 // assert
                 result.Should().Be(expected);

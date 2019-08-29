@@ -4,12 +4,12 @@ using System.Collections.Generic;
 
 namespace TestData.Common.Reflection
 {
-    class TypeEnumerator : IEnumerator<Type>
+    class TypeEnumerator : IEnumerator<Type>, IExtendedDisposable
     {
         public TypeEnumerator(Type initialType, Func<Type, Type> getNextType)
         {
-            _initialType = initialType ?? throw new ArgumentNullException(nameof(initialType));
-            _getNextType = getNextType ?? throw new ArgumentNullException(nameof(getNextType));
+            _initialType = Assert.IsNotNull(initialType, nameof(initialType));
+            _getNextType = Assert.IsNotNull(getNextType, nameof(getNextType));
             Reset();
         }
 
@@ -31,6 +31,7 @@ namespace TestData.Common.Reflection
         #region IDisposable
 
         private bool _isDisposed;
+        bool IExtendedDisposable.IsDisposed => _isDisposed;
         public void Dispose()
         {
             Dispose(true);
@@ -45,7 +46,7 @@ namespace TestData.Common.Reflection
                 _isDisposed = true;
             }
         }
-        protected void ThrowIfDisposed() { if (_isDisposed) throw new ObjectDisposedException(GetType().FullName); }
+        protected void ThrowIfDisposed() { Assert.IsNotDisposed(this, e => e._isDisposed); if (_isDisposed) Error.Raise(new ObjectDisposedException(GetType().FullName), Errors.ObjectIsDisposed); }
 
         #endregion
     }

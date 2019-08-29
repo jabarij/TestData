@@ -1,10 +1,17 @@
-﻿namespace TestData.Building.Dynamic
+﻿using System;
+
+namespace TestData.Building.Dynamic
 {
-    public interface IDynamicBuilder<T> : IBuilder<T>
+    public interface IDynamicBuilder : IBuilder
     {
         bool IsOverwritten(string name);
-        void Overwrite<TProperty>(string name, TProperty value);
-        TProperty GetOverwrittenValue<TProperty>(string name);
-        void OverwriteAll(T template);
+        void Overwrite(string name, object value);
+        object GetOverwrittenValue(string name);
+        void OverwriteWithTemplate(object template);
+        void OverwriteWithDelegate(Action<OverwritingContext> overwrite);
+    }
+
+    public interface IDynamicBuilder<T> : IDynamicBuilder, IBuilder<T>
+    {
     }
 }

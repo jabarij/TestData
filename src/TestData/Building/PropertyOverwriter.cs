@@ -2,17 +2,23 @@
 
 namespace TestData.Building
 {
-    public class PropertyOverwriter<T> : IPropertyOverwriter<T>
+    public class PropertyOverwriter : ITypedPropertyOverwriter
     {
-        private readonly T _originalValue;
+        private readonly object _originalValue;
 
-        private PropertyOverwriter()
-            : this(default(T)) { }
-        public PropertyOverwriter(T originalValue)
+        public PropertyOverwriter(Type propertyType, object originalValue = null)
         {
+            PropertyType = Assert.IsNotNull(propertyType, nameof(propertyType));
+
+            if (!ReferenceEquals(originalValue, null))
+                Assert.IsOfType(originalValue, propertyType, nameof(originalValue));
+
+            originalValue = NullCheck(propertyType, originalValue);
             _originalValue = originalValue;
             _value = originalValue;
         }
+
+        public Type PropertyType { get; }
 
         public bool IsOverwritten { get; private set; }
         public void Restore()
@@ -21,21 +27,15 @@ namespace TestData.Building
             IsOverwritten = true;
         }
 
-        private T _value;
-        public T Value { get => _value; set { _value = value; IsOverwritten = true; } }
+        private object _value;
+        public object Value { get => _value; set { _value = value; IsOverwritten = true; } }
 
-        object IValueGetter.GetValue() => Value;
-        void IValueSetter.SetValue(object value) => Value = (T)value;
+        public object GetValue() => Value;
+        public void SetValue(object value) => Value = value;
 
-    }
-
-    public class PropertyOverwriter
-    {
-        public static IPropertyOverwriter Create(Type type) =>
-            (IPropertyOverwriter)Activator.CreateInstance(typeof(PropertyOverwriter<>).MakeGenericType(type), true);
-        public static PropertyOverwriter<T> Create<T>() =>
-            new PropertyOverwriter<T>(default(T));
-        public static PropertyOverwriter<T> Create<T>(T originalValue) =>
-            new PropertyOverwriter<T>(originalValue);
+        private object NullCheck(Type type, object value) =>
+            type.IsValueType && ReferenceEquals(value, null)
+            ? Activator.CreateInstance(type)
+            : value;
     }
 }

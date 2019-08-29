@@ -9,7 +9,7 @@ namespace TestData.Building.Dynamic
 {
     partial class DynamicBuilderTests
     {
-        public class OverwriteAll : DynamicBuilderTests
+        public class OverwriteWithDelegate_TemplatingAction : DynamicBuilderTests
         {
             [Fact]
             public void NullTemplate_ShouldThrow()
@@ -18,7 +18,7 @@ namespace TestData.Building.Dynamic
                 var sut = new DynamicBuilder<TestClass>();
 
                 // act
-                Action overwriteAll = () => sut.OverwriteAll(null);
+                Action overwriteAll = () => sut.OverwriteWithDelegate(null);
 
                 // assert
                 overwriteAll.Should().Throw<ArgumentNullException>();
@@ -33,7 +33,6 @@ namespace TestData.Building.Dynamic
                     propertySetter: propertySetterMock.Object);
 
                 int expectedValue = 1;
-                var template = new TestClass(expectedValue);
                 var expectedProperties = new[]
                 {
                     nameof(TestClass.PublicGetPublicSet),
@@ -48,10 +47,14 @@ namespace TestData.Building.Dynamic
                     nameof(TestClass.ProtectedInternalGetInternalSet),
                     nameof(TestClass.ProtectedInternalGetPrivateSet)
                 }
-                .Select(propName => template.GetType().GetProperty(propName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic));
+                .Select(propName => typeof(TestClass).GetProperty(propName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic));
 
                 // act
-                sut.OverwriteAll(template);
+                sut.OverwriteWithDelegate(ctx =>
+                {
+                    if (ctx.PropertyType == typeof(int))
+                        ctx.SetValue(expectedValue);
+                });
                 sut.Build();
 
                 // assert
@@ -72,17 +75,13 @@ namespace TestData.Building.Dynamic
                     PublicGetPrivateSet = value;
                     PublicReadOnlyAutoProperty = value;
                     _publicGetOfPrivateField = value;
-
                     InternalGetInternalSet = value;
                     InternalGetPrivateSet = value;
-
                     ProtectedInternalGetProtectedInternalSet = value;
                     ProtectedInternalGetInternalSet = value;
                     ProtectedInternalGetPrivateSet = value;
-
                     ProtectedGetProtectedSet = value;
                     ProtectedGetPrivateSet = value;
-
                     PrivateGetPrivateSet = value;
                 }
 
@@ -93,17 +92,13 @@ namespace TestData.Building.Dynamic
                 public int PublicReadOnlyAutoProperty { get; }
                 private readonly int _publicGetOfPrivateField;
                 public int PublicGetOfPrivateField => _publicGetOfPrivateField;
-
                 internal int InternalGetInternalSet { get; set; }
                 internal int InternalGetPrivateSet { get; private set; }
-
                 protected internal int ProtectedInternalGetProtectedInternalSet { get; set; }
                 protected internal int ProtectedInternalGetInternalSet { get; internal set; }
                 protected internal int ProtectedInternalGetPrivateSet { get; private set; }
-
                 protected int ProtectedGetProtectedSet { get; set; }
                 protected int ProtectedGetPrivateSet { get; private set; }
-
                 private int PrivateGetPrivateSet { get; set; }
             }
         }

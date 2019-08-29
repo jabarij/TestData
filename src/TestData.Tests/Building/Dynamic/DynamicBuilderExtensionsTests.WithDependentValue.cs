@@ -5,9 +5,9 @@ using Xunit;
 
 namespace TestData.Building.Dynamic
 {
-    partial class DynamicBuilderExtensionTests
+    partial class DynamicBuilderExtensionsTests
     {
-        public class WithDependentValue : DynamicBuilderExtensionTests
+        public class WithDependentValue : DynamicBuilderExtensionsTests
         {
             [Fact]
             public void NullBuilder_ShouldThrow()
@@ -16,10 +16,10 @@ namespace TestData.Building.Dynamic
                 IDynamicBuilder<TestClass> builder = null;
 
                 // act
-                Action withValue = () => DynamicBuilderExtensions.WithDependentValue(builder, e => e.Int32Property, db => 1);
+                Action withDependentValue = () => DynamicBuilderExtensions.WithDependentValue(builder, e => e.MinValueProperty, db => 1);
 
                 // assert
-                withValue.Should().Throw<ArgumentNullException>();
+                withDependentValue.Should().Throw<ArgumentNullException>();
             }
 
             [Fact]
@@ -29,10 +29,10 @@ namespace TestData.Building.Dynamic
                 var builderMock = new Mock<IDynamicBuilder<TestClass>>();
 
                 // act
-                Action withValue = () => DynamicBuilderExtensions.WithDependentValue(builderMock.Object, null, db => 1);
+                Action withDependentValue = () => DynamicBuilderExtensions.WithDependentValue(builderMock.Object, null, db => 1);
 
                 // assert
-                withValue.Should().Throw<ArgumentNullException>();
+                withDependentValue.Should().Throw<ArgumentNullException>();
             }
 
             [Fact]
@@ -42,10 +42,10 @@ namespace TestData.Building.Dynamic
                 var builderMock = new Mock<IDynamicBuilder<TestClass>>();
 
                 // act
-                Action withValue = () => DynamicBuilderExtensions.WithDependentValue(builderMock.Object, e => e.Int32Property, null);
+                Action withDependentValue = () => DynamicBuilderExtensions.WithDependentValue(builderMock.Object, e => e.MinValueProperty, null);
 
                 // assert
-                withValue.Should().Throw<ArgumentNullException>();
+                withDependentValue.Should().Throw<ArgumentNullException>();
             }
 
             [Fact]
@@ -55,10 +55,10 @@ namespace TestData.Building.Dynamic
                 var builderMock = new Mock<IDynamicBuilder<TestClass>>();
 
                 // act
-                Action withValue = () => DynamicBuilderExtensions.WithDependentValue(builderMock.Object, e => e.Int32Function(), db => 1);
+                Action withDependentValue = () => DynamicBuilderExtensions.WithDependentValue(builderMock.Object, e => e.Int32Function(), db => 1);
 
                 // assert
-                var exception = withValue.Should().Throw<ArgumentException>().And;
+                var exception = withDependentValue.Should().Throw<ArgumentException>().And;
                 exception.Data[Errors.ErrorCodeExceptionDataKey].Should().Be(Errors.OnlyMemberAccessExpressionAreAllowed.Code);
             }
 
@@ -67,18 +67,21 @@ namespace TestData.Building.Dynamic
             {
                 // arrange
                 var builderMock = new Mock<IDynamicBuilder<TestClass>>();
-                int expectedValue = 1;
+                int minValue = 1;
+                builderMock.Setup(e => e.Build()).Returns(new TestClass { MinValueProperty = minValue });
+                int expectedMaxValue = minValue + 1;
 
                 // act
-                var builder = DynamicBuilderExtensions.WithDependentValue(builderMock.Object, e => e.Int32Property, db => expectedValue);
+                var builder = DynamicBuilderExtensions.WithDependentValue(builderMock.Object, e => e.MaxValueProperty, lender => lender.MinValueProperty + 1);
 
                 // assert
-                builderMock.Verify(e => e.Overwrite(nameof(TestClass.Int32Property), expectedValue), Times.Once);
+                builderMock.Verify(e => e.Overwrite(nameof(TestClass.MaxValueProperty), expectedMaxValue), Times.Once);
             }
 
             public class TestClass
             {
-                public int Int32Property { get; set; }
+                public int MinValueProperty { get; set; }
+                public int MaxValueProperty { get; set; }
                 public int Int32Function() => default(int);
             }
         }

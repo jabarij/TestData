@@ -7,37 +7,76 @@ namespace TestData.Building.Dynamic
     {
         public class IsOverwritten : DynamicBuilderTests
         {
-            [Fact]
-            public void NotOverwritten_ShouldReturnFalse()
+            public class ReferenceType : IsOverwritten
             {
-                // arrange
-                var sut = new DynamicBuilder<SomeClass>();
+                [Fact]
+                public void NotOverwritten_ShouldReturnFalse()
+                {
+                    // arrange
+                    var sut = new DynamicBuilder<SomeClass>();
 
-                // act
-                bool result = sut.IsOverwritten(nameof(SomeClass.Int32Property));
+                    // act
+                    bool result = sut.IsOverwritten(nameof(SomeClass.Int32Property));
 
-                // assert
-                result.Should().BeFalse();
+                    // assert
+                    result.Should().BeFalse();
+                }
+
+                [Fact]
+                public void Overwritten_ShouldReturnTrue()
+                {
+                    // arrange
+                    var sut = new DynamicBuilder<SomeClass>();
+                    sut.Overwrite(nameof(SomeClass.Int32Property), 1);
+
+                    // act
+                    bool result = sut.IsOverwritten(nameof(SomeClass.Int32Property));
+
+                    // assert
+                    result.Should().BeTrue();
+                }
+
+                class SomeClass
+                {
+                    public int Int32Property { get; set; }
+                    public string StringProperty { get; set; }
+                }
             }
 
-            [Fact]
-            public void Overwritten_ShouldReturnTrue()
+            public class ValueType : IsOverwritten
             {
-                // arrange
-                var sut = new DynamicBuilder<SomeClass>();
-                sut.Overwrite(nameof(SomeClass.Int32Property), 1);
+                [Fact]
+                public void NotOverwritten_ShouldReturnFalse()
+                {
+                    // arrange
+                    var sut = new DynamicBuilder<SomeStruct>();
 
-                // act
-                bool result = sut.IsOverwritten(nameof(SomeClass.Int32Property));
+                    // act
+                    bool result = sut.IsOverwritten(nameof(SomeStruct.Int32Property));
 
-                // assert
-                result.Should().BeTrue();
-            }
+                    // assert
+                    result.Should().BeFalse();
+                }
 
-            class SomeClass
-            {
-                public int Int32Property { get; set; }
-                public string StringProperty { get; set; }
+                [Fact]
+                public void Overwritten_ShouldReturnTrue()
+                {
+                    // arrange
+                    var sut = new DynamicBuilder<SomeStruct>();
+                    sut.Overwrite(nameof(SomeStruct.Int32Property), 1);
+
+                    // act
+                    bool result = sut.IsOverwritten(nameof(SomeStruct.Int32Property));
+
+                    // assert
+                    result.Should().BeTrue();
+                }
+
+                struct SomeStruct
+                {
+                    public int Int32Property { get; set; }
+                    public string StringProperty { get; set; }
+                }
             }
         }
     }

@@ -9,57 +9,144 @@ namespace TestData.Building.Standard
     {
         public class Create : ConstructorInstanceFactoryTests
         {
-            [Fact]
-            public void NullConstructorSelected_ShouldThrow()
+            public class ReferenceType : Create
             {
-                // arrange
-                var sut = new ConstructorInstanceFactory<SomeClass>(
-                    constructorSelector: new DelegateConstructorSelector<SomeClass>(t => null));
+                [Fact]
+                public void NullConstructorSelected_ShouldThrow()
+                {
+                    // arrange
+                    var sut = new ConstructorInstanceFactory<SomeClass>(
+                        constructorSelector: new DelegateConstructorSelector<SomeClass>(t => null));
 
-                // act
-                Action create = () => sut.Create(Enumerable.Empty<INamedPropertyOverwriter>());
+                    // act
+                    Action create = () => sut.Create(Enumerable.Empty<INamedPropertyOverwriter>());
 
-                // assert
-                var exception = create.Should().Throw<InvalidOperationException>().And;
-                exception.Data[Errors.ErrorCodeExceptionDataKey].Should().Be(Errors.ConstructorNotFound.Code);
+                    // assert
+                    var exception = create.Should().Throw<InvalidOperationException>().And;
+                    exception.Data[Errors.ErrorCodeExceptionDataKey].Should().Be(Errors.ConstructorNotFound.Code);
+                }
+
+                [Fact]
+                public void NoOverwriterMatchingConstructorParameter_ShouldCreateWithDefaultValueForConstructorParameter()
+                {
+                    // arrange
+                    var sut = new ConstructorInstanceFactory<SomeClass>(
+                        constructorSelector: new DelegateConstructorSelector<SomeClass>(t => t.GetConstructor(new Type[] { typeof(int), typeof(string) })));
+                    var expected = new SomeClass(
+                        intProperty: default(int),
+                        stringProperty: default(string));
+
+                    // act
+                    var result = sut.Create(Enumerable.Empty<INamedPropertyOverwriter>());
+
+                    // assert
+                    result.Should().BeEquivalentTo(expected);
+                }
+
+                [Fact]
+                public void ShouldCreateWithOverwrittenValueForConstructorParameter()
+                {
+                    // arrange
+                    var sut = new ConstructorInstanceFactory<SomeClass>(
+                        constructorSelector: new DelegateConstructorSelector<SomeClass>(t => t.GetConstructor(new Type[] { typeof(int), typeof(string) })));
+                    int expectedIntProperty = 1;
+                    string expectedStringProperty = "test";
+                    var expected = new SomeClass(
+                        intProperty: expectedIntProperty,
+                        stringProperty: expectedStringProperty);
+
+                    // act
+                    var result = sut.Create(new INamedPropertyOverwriter[]
+                    {
+                        new NamedPropertyOverwriter<int>("intProperty", expectedIntProperty),
+                        new NamedPropertyOverwriter<string>("stringProperty", expectedStringProperty)
+                    });
+
+                    // assert
+                    result.Should().BeEquivalentTo(expected);
+                }
+
+                class SomeClass
+                {
+                    public SomeClass(int intProperty, string stringProperty)
+                    {
+                        IntProperty = intProperty;
+                        StringProperty = stringProperty;
+                    }
+
+                    public int IntProperty { get; }
+                    public string StringProperty { get; }
+                }
             }
 
-            [Fact]
-            public void NoOverwriterMatchingConstructorParameter_ShouldCreateWithDefaultValueForConstructorParameter()
+            public class ValueType : Create
             {
-                // arrange
-                var sut = new ConstructorInstanceFactory<SomeClass>(
-                    constructorSelector: new DelegateConstructorSelector<SomeClass>(t => t.GetConstructor(new Type[] { typeof(int) })));
-                var expected = new SomeClass(default(int));
+                [Fact]
+                public void NullConstructorSelected_ShouldThrow()
+                {
+                    // arrange
+                    var sut = new ConstructorInstanceFactory<SomeStruct>(
+                        constructorSelector: new DelegateConstructorSelector<SomeStruct>(t => null));
 
-                // act
-                var result = sut.Create(Enumerable.Empty<INamedPropertyOverwriter>());
+                    // act
+                    Action create = () => sut.Create(Enumerable.Empty<INamedPropertyOverwriter>());
 
-                // assert
-                result.Should().BeEquivalentTo(expected);
-            }
+                    // assert
+                    var exception = create.Should().Throw<InvalidOperationException>().And;
+                    exception.Data[Errors.ErrorCodeExceptionDataKey].Should().Be(Errors.ConstructorNotFound.Code);
+                }
 
-            [Fact]
-            public void ShouldCreateWithOverwrittenValueForConstructorParameter()
-            {
-                // arrange
-                var sut = new ConstructorInstanceFactory<SomeClass>(
-                    constructorSelector: new DelegateConstructorSelector<SomeClass>(t => t.GetConstructor(new Type[] { typeof(int) })));
-                int overwrittenValue = 1;
-                var expected = new SomeClass(overwrittenValue);
+                [Fact]
+                public void NoOverwriterMatchingConstructorParameter_ShouldCreateWithDefaultValueForConstructorParameter()
+                {
+                    // arrange
+                    var sut = new ConstructorInstanceFactory<SomeStruct>(
+                        constructorSelector: new DelegateConstructorSelector<SomeStruct>(t => t.GetConstructor(new Type[] { typeof(int), typeof(string) })));
+                    var expected = new SomeStruct(
+                        intProperty: default(int),
+                        stringProperty: default(string));
 
-                // act
-                var result = sut.Create(new INamedPropertyOverwriter[] { new NamedPropertyOverwriter<int>("param", overwrittenValue) });
+                    // act
+                    var result = sut.Create(Enumerable.Empty<INamedPropertyOverwriter>());
 
-                // assert
-                result.Should().BeEquivalentTo(expected);
-            }
+                    // assert
+                    result.Should().BeEquivalentTo(expected);
+                }
 
-            class SomeClass
-            {
-                public SomeClass(int param) { Param = param; }
+                [Fact]
+                public void ShouldCreateWithOverwrittenValueForConstructorParameter()
+                {
+                    // arrange
+                    var sut = new ConstructorInstanceFactory<SomeStruct>(
+                        constructorSelector: new DelegateConstructorSelector<SomeStruct>(t => t.GetConstructor(new Type[] { typeof(int), typeof(string) })));
+                    int expectedIntProperty = 1;
+                    string expectedStringProperty = "test";
+                    var expected = new SomeStruct(
+                        intProperty: expectedIntProperty,
+                        stringProperty: expectedStringProperty);
 
-                public int Param { get; }
+                    // act
+                    var result = sut.Create(new INamedPropertyOverwriter[]
+                    {
+                        new NamedPropertyOverwriter<int>("intProperty", expectedIntProperty),
+                        new NamedPropertyOverwriter<string>("stringProperty", expectedStringProperty)
+                    });
+
+                    // assert
+                    result.Should().BeEquivalentTo(expected);
+                }
+
+                struct SomeStruct
+                {
+                    public SomeStruct(int intProperty, string stringProperty)
+                    {
+                        IntProperty = intProperty;
+                        StringProperty = stringProperty;
+                    }
+
+                    public int IntProperty { get; }
+                    public string StringProperty { get; }
+                }
             }
         }
     }
